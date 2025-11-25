@@ -8,8 +8,7 @@ import Header from "@/components/shared/header/Header";
 import Footer from "@/components/shared/footer/Footer";
 import CallButton from "@/components/shared/callButton/CallButton";
 
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://bezlad-frontend.vercel.app";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://bezlad.com";
 
 const raleway = Raleway({
   variable: "--font-raleway",
