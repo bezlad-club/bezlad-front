@@ -48,7 +48,7 @@ export const GlassCard = React.memo(
                 //fountain zone
                 imageSize: { width: 224, height: 214 },
                 imageClassName:
-                    "md:max-w-[272px] md:max-h-[260px] lg:w-[272px] lg:h-[260px] object-cover absolute top-[-75px] md:top-[-91px] right-[-57px] md:right-[-97px] lg:top-[-91px] lg:right-[-11px]",
+                    "md:max-w-[272px] md:max-h-[260px] lg:w-[272px] lg:h-[260px] object-cover absolute top-[-75px] md:top-[-91px] right-[-57px] md:right-[-97px] lg:top-[-91px] lg:right-[-130px] xl:right-[-11px]",
                 textClassName: `${COMMON_TEXT_BOTTOM} z-1 items-start lg:max-w-[146px]`,
                 starClassName: "ml-[-8px] lg:ml-[8px] lg:mb-[6px]",
                 cardClassName: "lg:h-[189px]",
@@ -153,7 +153,7 @@ export const PurpleBlobCard = React.memo(
                         {title}
                     </p>
                 </div>
-                <div className="w-[207.5px] h-[198px] md:w-[207.5px] md:h-[198px] lg:w-[349px] lg:h-[288px] absolute z-2 top-[-65px] md:top-[-75px] lg:top-[-128px] right-[-80.5px] md:right-[-40.5px] lg:right-[-134px]">
+                <div className="w-[207.5px] h-[198px] md:w-[207.5px] md:h-[198px] lg:w-[349px] lg:h-[288px] absolute z-2 top-[-65px] md:top-[-75px] lg:top-[-168px] xl:top-[-128px] right-[-80.5px] md:right-[-40.5px] lg:right-[-134px] xl:right-[-134px]">
                     <Image
                         src={image}
                         alt={title}
@@ -305,7 +305,7 @@ export const GrayCard = React.memo(
                         "absolute",
                         COMMON_TEXT_BOTTOM,
                         "z-1",
-                        "max-w-[135px] leading-[150%]"
+                        "max-w-[135px] z-11 leading-[150%]"
                     )}
                 >
                     <p
@@ -320,7 +320,7 @@ export const GrayCard = React.memo(
                 <div
                     className={clsx(
                         "absolute z-10 rounded-full overflow-hidden",
-                        "w-[158px] h-[152px] md:w-[323px] md:h-[308.6px] lg:w-[323px] lg:h-[308px] top-[-14px] md:top-[-143px] lg:top-[-56px] right-[-32px] sm:right-[-3px] md:right-[-158px] lg:right-[-91px]"
+                        "w-[158px] h-[152px] md:w-[323px] md:h-[308.6px] lg:w-[323px] lg:h-[308px] top-[-14px] md:top-[-143px] lg:top-[-56px] right-[-32px] sm:right-[-3px] md:right-[-158px] lg:right-[-130px] xl:right-[-91px]"
                     )}
                 >
                     <Image
@@ -442,7 +442,7 @@ export const PixelArtCard = React.memo(
                     <p className={COMMON_TEXT_STYLE}>{title}</p>
                 </div>
 
-                <div className="w-[202px] h-[193px] z-2 md:w-[252px] md:h-[237px] lg:w-[323px] lg:h-[308px] absolute top-[-41px] md:top-[-75px] lg:top-[-54px] left-[-62px] md:left-[-38px] lg:left-auto lg:right-[-169px]">
+                <div className="w-[202px] h-[193px] z-2 md:w-[252px] md:h-[237px] lg:w-[323px] lg:h-[308px] absolute top-[-41px] md:top-[-75px] lg:top-[-154px] xl:top-[-54px] left-[-62px] md:left-[-38px] lg:left-auto lg:right-[-200px] xl:right-[-169px]">
                     <Image
                         src={image}
                         alt={title}
@@ -554,7 +554,7 @@ export const YellowBlobCard = React.memo(
                         {title}
                     </p>
                 </div>
-                <div className="z-2 absolute w-[158px] h-[152px] sm:w-[349px] sm:h-[288px] lg:w-[606px] lg:h-[439px] top-[-14px] md:top-[-143px] lg:top-[-135px] right-[-32px] md:right-[-164px] lg:right-[-58px] rounded-full overflow-hidden">
+                <div className="z-2 absolute w-[158px] h-[152px] sm:w-[349px] sm:h-[288px] lg:w-[606px] lg:h-[439px] top-[-14px] md:top-[-143px] lg:top-[-135px] right-[-32px] md:right-[-164px] lg:right-[-230px] xl:right-[-58px] rounded-full overflow-hidden">
                     <Image
                         src={image}
                         alt={title}
