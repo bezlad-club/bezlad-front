@@ -37,8 +37,7 @@ export default function Confirmation() {
           })}
           className="max-w-[352px] mx-auto mb-6 text-[14px] font-normal leading-[120%] text-center"
         >
-          Ми отримали вашу оплату. Найближчим часом ми зв’яжемось із вами, щоб
-          підтвердити деталі візиту.
+          Ми отримали вашу оплату. Чекаємо на вас у робочі години простору.
         </motion.p>
         <motion.div
           initial="hidden"
