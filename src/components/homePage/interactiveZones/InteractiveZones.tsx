@@ -6,7 +6,7 @@ import { InteractiveZonesBlockDynamic } from "./interactiveZonesBlock/Interactiv
 
 export default function InteractiveZones() {
     return (
-        <section className="py-25">
+        <section id="interactive-zones" className="py-25">
             <Container>
                 <div className="mb-22 md:mb-26 lg:mb-20 xl:mb-[34px] flex flex-col lg:items-center lg:flex-row gap-[14px] lg:gap-8">
                     <SectionTitle>Інтерактивні зони</SectionTitle>

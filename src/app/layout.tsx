@@ -7,6 +7,8 @@ import "./globals.css";
 import Header from "@/components/shared/header/Header";
 import Footer from "@/components/shared/footer/Footer";
 import CallButton from "@/components/shared/callButton/CallButton";
+import schemaOrgData from "@/constants/schemaOrgData.json";
+import Script from "next/script";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://bezlad.com";
 
@@ -68,6 +70,13 @@ export default function RootLayout({
         <main className="flex-1 overflow-hidden"> {children}</main>
         <Footer />
         <CallButton />
+        <Script
+          id="schema-org"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(schemaOrgData),
+          }}
+        />
       </body>
     </html>
   );

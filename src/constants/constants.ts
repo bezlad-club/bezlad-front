@@ -11,5 +11,6 @@ export const CODE_SITE_URL = "https://www.code-site.art/";
 export const WEB_BOND_URL = "https://webbond.dk/";
 
 export const INSTAGRAM_URL = "https://www.instagram.com/bezladclub/";
-export const FACEBOOK_URL = "";
-export const TELEGRAM_URL = "";
+export const FACEBOOK_URL =
+  "https://www.facebook.com/profile.php?id=61583475467985";
+export const TELEGRAM_URL = "https://t.me/Bezladclub";
