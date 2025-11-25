@@ -14,7 +14,7 @@ import {
 import { SwiperWrapper } from "@/components/shared/swiper/SwiperWrapper";
 import { useScreenWidth } from "@/hooks/useScreenWidth";
 import { renderCard } from "./cardMapper";
-import { getSlides } from "./helpers";
+import { getSlides, DesktopSlideLayout } from "./helpers";
 import dynamic from "next/dynamic";
 
 function InteractiveZonesBlock() {
@@ -31,53 +31,91 @@ function InteractiveZonesBlock() {
         () =>
             getSlides(
                 breakpoint,
-                breakpoint === "desktop"
-                    ? interactiveZonesData.sort(
-                          (a, b) => a.desktopId - b.desktopId
-                      )
-                    : interactiveZonesData.sort((a, b) => a.id - b.id)
+                interactiveZonesData.sort((a, b) => a.id - b.id)
             ),
         [breakpoint]
     );
 
     const renderSlides = useMemo(() => {
         if (breakpoint === "desktop") {
-            return (slides as InteractiveZoneItem[][][]).map(
-                (slide, slideIndex) => (
-                    <SwiperSlide key={breakpoint + "-" + slideIndex}>
-                        {({ isVisible }) => (
-                            <div
-                                className="flex flex-row gap-[14px]"
-                                style={{
-                                    opacity: isVisible ? 1 : 0,
-                                    transition: "opacity 0.3s ease-in-out",
-                                }}
-                            >
-                                {slide.map((chunk, chunkIndex) => (
-                                    <div
-                                        key={
-                                            breakpoint +
-                                            "-" +
-                                            slideIndex +
-                                            "-" +
-                                            chunkIndex
-                                        }
-                                        className="flex flex-wrap gap-[14px]"
-                                    >
-                                        {chunk.map(
-                                            (item: InteractiveZoneItem) => (
-                                                <div key={item.id}>
-                                                    {renderCard(item)}
-                                                </div>
-                                            )
-                                        )}
+            return (slides as DesktopSlideLayout[]).map((slide, slideIndex) => (
+                <SwiperSlide key={breakpoint + "-" + slideIndex}>
+                    {({ isVisible }) => (
+                        <div
+                            className={`grid gap-4 grid-cols-1 lg:grid-rows-[auto_auto] ${
+                                slide.isVerticalOnLeft
+                                    ? "lg:grid-cols-[285px_1fr]"
+                                    : "lg:grid-cols-[1fr_285px]"
+                            }`}
+                            style={{
+                                opacity: isVisible ? 1 : 0,
+                                transition: "opacity 0.3s ease-in-out",
+                            }}
+                        >
+                            {slide.isVerticalOnLeft ? (
+                                <>
+                                    {/* Vertical Card on Left */}
+                                    <div className="lg:row-span-2 w-full">
+                                        {renderCard(slide.verticalCard)}
                                     </div>
-                                ))}
-                            </div>
-                        )}
-                    </SwiperSlide>
-                )
-            );
+                                    {/* Top Row */}
+                                    <div className="flex gap-5 w-full items-center">
+                                        {slide.topRow.map(item => (
+                                            <div
+                                                key={item.id}
+                                                className="w-full"
+                                            >
+                                                {renderCard(item)}
+                                            </div>
+                                        ))}
+                                    </div>
+                                    {/* Bottom Row */}
+                                    <div className="flex gap-5 w-full items-center">
+                                        {slide.bottomRow.map(item => (
+                                            <div
+                                                key={item.id}
+                                                className="w-full"
+                                            >
+                                                {renderCard(item)}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    {/* Top Row */}
+                                    <div className="flex gap-5 w-full items-center">
+                                        {slide.topRow.map(item => (
+                                            <div
+                                                key={item.id}
+                                                className="w-full"
+                                            >
+                                                {renderCard(item)}
+                                            </div>
+                                        ))}
+                                    </div>
+                                    {/* Bottom Row */}
+                                    <div className="flex gap-5 w-full items-center">
+                                        {slide.bottomRow.map(item => (
+                                            <div
+                                                key={item.id}
+                                                className="w-full"
+                                            >
+                                                {renderCard(item)}
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* Vertical Card on Right */}
+                                    <div className="lg:row-span-2 lg:col-start-2 lg:row-start-1 w-full">
+                                        {renderCard(slide.verticalCard)}
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    )}
+                </SwiperSlide>
+            ));
         } else {
             return (slides as InteractiveZoneItem[][]).map(
                 (slide, slideIndex) => (
@@ -117,11 +155,11 @@ function InteractiveZonesBlock() {
 
     return (
         <SwiperWrapper
-            pagination={breakpoint !== 'desktop'}
-            navigation={breakpoint === 'desktop'}
+            pagination={breakpoint !== "desktop"}
+            navigation={breakpoint === "desktop"}
             overflowVisible={true}
             spaceBetween={30}
-            controllsVariant='black'
+            controllsVariant="black"
         >
             {renderSlides}
         </SwiperWrapper>
