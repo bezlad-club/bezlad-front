@@ -10,6 +10,7 @@ import { Noodle, Noodle2 } from "@/components/shared/icons/Noodle";
 import type { Direction, PictureSize } from "../interactiveZonesData";
 import { useScreenWidth } from "@/hooks/useScreenWidth";
 import { BREAKPOINT_DESKTOP } from "./slidesLayouts";
+import { twMerge } from "tailwind-merge";
 
 export interface InterativeZonesCardProps {
     title: string;
@@ -20,8 +21,7 @@ export interface InterativeZonesCardProps {
 }
 
 // Common style constants to avoid duplication
-const COMMON_CARD_BASE =
-    "w-full sm:w-full md:w-[350px] h-[117px] sm:h-[145px] md:h-[165px]";
+const COMMON_CARD_BASE = "w-full h-[117px] sm:h-[145px] md:h-[165px]";
 const COMMON_CARD_ROUNDED =
     "rounded-[14px] sm:rounded-[16px] md:rounded-[18px]";
 const COMMON_CARD_PADDING = "px-4 py-3 sm:px-5 sm:py-4 md:p-5";
@@ -48,8 +48,10 @@ export const GlassCard = React.memo(
                 //fountain zone
                 imageSize: { width: 224, height: 214 },
                 imageClassName:
-                    "md:w-[272px] md:h-[260px] object-cover absolute top-[-75px] md:top-[-91px] right-[-57px] md:right-[-97px] xl:left-[175px]",
+                    "md:max-w-[272px] md:max-h-[260px] object-cover absolute top-[-75px] md:top-[-91px] right-[-57px] md:right-[-97px] xl:left-[175px]",
                 textClassName: `${COMMON_TEXT_BOTTOM} z-1 items-start lg:max-w-[146px]`,
+                starClassName: "ml-[-8px]",
+                cardClassName: " lg:h-[189px]",
             },
             right: {
                 // kinetic sand
@@ -58,6 +60,7 @@ export const GlassCard = React.memo(
                     "md:w-[272px] md:h-[260px] top-[-54px] md:top-[-91px] left-[-59px] md:left-[175px]",
                 textClassName:
                     "bottom-3 right-4 sm:right-5 sm:bottom-4 md:right-auto md:bottom-5 z-1 items-end lg:max-w-[146px]",
+                cardClassName: "lg:h-[201px]",
             },
         };
 
@@ -75,7 +78,7 @@ export const GlassCard = React.memo(
                 className={clsx(
                     "p-px overflow-hidden",
                     COMMON_CARD_BASE,
-                    "lg:w-[330px] lg:h-[165px] xl:w-[386px] xl:h-[189px]",
+                    variant.cardClassName,
                     COMMON_CARD_ROUNDED
                 )}
             >
@@ -89,7 +92,7 @@ export const GlassCard = React.memo(
                 >
                     <div
                         className={clsx(
-                            "absolute flex flex-col gap-0.5 xl:gap-[9px] items-end md:items-start md:max-w-[146px]",
+                            "absolute flex flex-col gap-1 xl:gap-[9px] items-end md:items-start md:max-w-[146px]",
                             variant.textClassName
                         )}
                     >
@@ -123,7 +126,7 @@ export const PurpleBlobCard = React.memo(
                 className={clsx(
                     "relative overflow-hidden",
                     COMMON_CARD_BASE,
-                    "lg:w-[235px] lg:h-[350px] xl:w-[285px] xl:h-[409px] bg-purple",
+                    " lg:h-[201px] bg-purple",
                     COMMON_CARD_ROUNDED,
                     COMMON_CARD_PADDING
                 )}
@@ -166,42 +169,42 @@ PurpleBlobCard.displayName = "PurpleBlobCard";
 export const YellowElipseCard = React.memo(
     ({ title, image }: InterativeZonesCardProps) => {
         return (
-            <div
-                className="relative overflow-visible"
-                style={{
-                    width: "100%",
-                    minWidth: 0,
-                }}
-            >
+            <div className="relative overflow-visible">
                 <div
                     role="article"
                     aria-label={`Interactive zone: ${title}`}
                     className={clsx(
                         "relative",
                         COMMON_CARD_BASE,
-                        "lg:w-[330px] lg:h-[165px] xl:w-[489px] xl:h-[189px] bg-yellow",
+                        "lg:h-[410px]",
                         COMMON_CARD_ROUNDED,
                         COMMON_CARD_PADDING,
                         "overflow-hidden"
                     )}
+                    style={{background: YELLOW_GRADIENT_BG}}
+                    
                 >
-                    <div className={clsx("absolute", COMMON_TEXT_BOTTOM)}>
+                    <div className={clsx("absolute lg:right-5 z-2", COMMON_TEXT_BOTTOM)}>
                         <p
                             className={clsx(
                                 COMMON_TEXT_STYLE,
-                                "max-w-[103px] md:max-w-[154px]"
+                                "max-w-[103px] md:max-w-[154px] lg:text-right"
                             )}
                         >
                             {title}
                         </p>
                     </div>
-                    <div className="z-1 w-[263px] h-[225.7px] xl:w-[263px] xl:h-[225.7px] absolute top-[-93px] right-[-88px] xl:top-[-57px] xl:left-[226px] pointer-events-none">
+                    <div className="lg:hidden z-1 w-[263px] h-[225.7px] xl:w-[263px] xl:h-[225.7px] absolute top-[-93px] right-[-88px] xl:top-[-57px] xl:left-[226px] pointer-events-none">
                         <div className="bg-yellow-light blur-[40.6624px] w-full h-full" />
                     </div>
+                    <Noodle
+                        preserveAspectRatio="none"
+                        className="hidden lg:block w-full h-[185px] text-yellow-detail absolute bottom-0 left-0"
+                    />
                 </div>
                 <AnimatedAnimal
                     svgPath={image}
-                    className="z-2 w-[162.7px] h-[196.6px] md:w-[226.8px] md:h-auto lg:w-[226.8px] lg:h-auto xl:w-[286.8px] xl:h-[360.5px] absolute top-[-80px] sm:top-[-80px] md:top-[-110px] lg:top-[-110px] xl:top-[-190px] right-[-1px] sm:right-[23px] md:right-[-7px] lg:left-[130px] xl:left-[215px] pointer-events-none"
+                    className="z-2 w-[162.7px] h-[196.6px] md:w-[226.8px] md:h-auto lg:w-[286.8px] lg:h-[360.5px] absolute top-[-80px] sm:top-[-80px] md:top-[-110px] lg:top-[-115px] -right-px sm:right-[23px] md:right-[-7px] lg:right-[-22px] pointer-events-none"
                     maxPupilMovement={3}
                 />
             </div>
@@ -219,13 +222,18 @@ export const PurpleNoiseCard = React.memo(
                 className={clsx(
                     "overflow-hidden relative",
                     COMMON_CARD_BASE,
-                    "lg:w-[330px] lg:h-[165px] xl:w-[489px] xl:h-[189px] bg-purple",
+                    "lg:h-[189px] bg-purple",
                     COMMON_CARD_ROUNDED,
                     COMMON_CARD_PADDING
                 )}
             >
                 <div className={clsx("absolute", COMMON_TEXT_BOTTOM, "z-3")}>
-                    <p className={clsx(COMMON_TEXT_STYLE, "text-white")}>
+                    <p
+                        className={twMerge(
+                            COMMON_TEXT_STYLE,
+                            "text-white leading-[150%]"
+                        )}
+                    >
                         {title}
                     </p>
                 </div>
@@ -251,17 +259,8 @@ export const PurpleNoiseCard = React.memo(
 PurpleNoiseCard.displayName = "PurpleNoiseCard";
 
 export const GrayCard = React.memo(
-    ({ title, image, pictureSize = "big" }: InterativeZonesCardProps) => {
+    ({ title, image, pictureSize = "small" }: InterativeZonesCardProps) => {
         const picVariant = {
-            big: {
-                //cafe
-                width: 243,
-                height: 232,
-                imageClassName:
-                    "w-[243px] h-[232px] md:w-[323px] md:h-[308.6px] lg:w-[230px] lg:h-[219.933px] top-[-93px] md:top-[-133px] lg:top-[-50px] right-[-46px] sm:right-[-23px] md:right-[-88px] lg:left-[200px] xl:left-[115px]",
-                cardClassName: "xl:w-[386px] xl:h-[201px] lg:w-[360px]",
-                textClassName: "",
-            },
             small: {
                 //small sandbox
                 width: 158,
@@ -269,8 +268,8 @@ export const GrayCard = React.memo(
                 imageClassName:
                     "w-[158px] h-[152px] md:w-[323px] md:h-[308.6px] lg:w-[180px] lg:h-[173px] xl:w-[349px] xl:h-[288px] top-[-14px] md:top-[-143px] lg:top-[-60px] xl:top-[-128px] right-[-32px] sm:right-[-3px] md:right-[-158px] lg:left-[-60px] xl:left-[-184.5px]",
                 cardClassName:
-                    "xl:w-[234.5px] xl:h-[201px] lg:w-[215px] lg:h-[165px]",
-                textClassName: "lg:right-5 max-w-[135px]",
+                    "lg:h-[189px]",
+                textClassName: "lg:right-5 max-w-[135px] leading-[150%]",
             },
         };
         return (
@@ -283,7 +282,7 @@ export const GrayCard = React.memo(
                     "lg:h-[165px] bg-gray-dark",
                     COMMON_CARD_ROUNDED,
                     COMMON_CARD_PADDING,
-                    picVariant[pictureSize].cardClassName
+                    picVariant.small.cardClassName
                 )}
             >
                 <div
@@ -291,7 +290,7 @@ export const GrayCard = React.memo(
                         "absolute",
                         COMMON_TEXT_BOTTOM,
                         "z-1",
-                        picVariant[pictureSize].textClassName
+                        picVariant.small.textClassName
                     )}
                 >
                     <p
@@ -306,14 +305,14 @@ export const GrayCard = React.memo(
                 <div
                     className={clsx(
                         "absolute rounded-full overflow-hidden",
-                        picVariant[pictureSize].imageClassName
+                        picVariant.small.imageClassName
                     )}
                 >
                     <Image
                         src={image}
                         alt={title}
-                        width={picVariant[pictureSize].width}
-                        height={picVariant[pictureSize].height}
+                        width={picVariant.small.width}
+                        height={picVariant.small.height}
                         loading="lazy"
                         className={clsx(
                             pictureSize === "small"
@@ -323,6 +322,12 @@ export const GrayCard = React.memo(
                         )}
                     />
                 </div>
+                <Image
+                    src="/images/interactiveZone/noise.webp"
+                    alt="noise"
+                    fill
+                    className="hidden lg:block absolute inset-0  pointer-events-none object-cover"
+                />
             </div>
         );
     }
@@ -350,8 +355,7 @@ export const BlackCard = React.memo(
                 arrowClassName:
                     "top-[-17px] left-[-8.97px] z-10 rotate-[-165deg]",
                 textClassName: `${COMMON_TEXT_BOTTOM} z-1`,
-                cardClassName:
-                    "xl:w-[386px] xl:h-[201px] lg:w-[215px] lg:h-[165px]",
+                cardClassName: "lg:h-[189px]",
             },
             right: {
                 //engineer
@@ -363,7 +367,7 @@ export const BlackCard = React.memo(
                 textClassName:
                     "bottom-3 right-4 md:right-5 md:bottom-5 lg:right-auto z-1 max-w-[129px] text-right lg:text-left",
                 cardClassName:
-                    "lg:w-[305px] lg:h-[165px] xl:w-[488px] xl:h-[201px] ",
+                    " lg:h-[410px] ",
             },
         };
 
@@ -382,7 +386,12 @@ export const BlackCard = React.memo(
                 )}
             >
                 <div className={clsx("absolute", variant.textClassName)}>
-                    <p className={clsx(COMMON_TEXT_STYLE, "text-white")}>
+                    <p
+                        className={twMerge(
+                            COMMON_TEXT_STYLE,
+                            "text-white leading-[150%]"
+                        )}
+                    >
                         {title}
                     </p>
                 </div>
@@ -403,7 +412,7 @@ export const BlackCard = React.memo(
 );
 BlackCard.displayName = "BlackCard";
 
-export const NoodleCard = React.memo(
+export const PixelArtCard = React.memo(
     ({ title, image }: InterativeZonesCardProps) => {
         return (
             <div
@@ -415,12 +424,12 @@ export const NoodleCard = React.memo(
                 className={clsx(
                     "relative overflow-hidden",
                     COMMON_CARD_BASE,
-                    "lg:w-[235px] lg:h-[350px] xl:w-[285px] xl:h-[409px]",
+                    " lg:h-[201px]",
                     COMMON_CARD_ROUNDED,
                     COMMON_CARD_PADDING
                 )}
             >
-                <div className="absolute bottom-3 right-4 sm:right-5 sm:bottom-4 md:right-5 md:bottom-5 xl:bottom-8 z-1">
+                <div className="absolute bottom-3 right-4 sm:right-5 sm:bottom-4 md:right-5 md:bottom-5 xl:bottom-8 z-1 md:max-w-[105px] md:text-right lg:text-left">
                     <p className={COMMON_TEXT_STYLE}>{title}</p>
                 </div>
 
@@ -448,9 +457,9 @@ export const NoodleCard = React.memo(
         );
     }
 );
-NoodleCard.displayName = "NoodleCard";
+PixelArtCard.displayName = "PixelArtCard";
 
-export const PlaceholderCard = React.memo(
+export const SinglePlaceholderCard = React.memo(
     ({ title, image }: InterativeZonesCardProps) => {
         return (
             <div
@@ -459,7 +468,6 @@ export const PlaceholderCard = React.memo(
                     COMMON_CARD_ROUNDED,
                     "flex items-center justify-center",
                     COMMON_CARD_BASE,
-                    "lg:w-[330px] lg:h-[165px] xl:w-[386px] xl:h-[189px]"
                 )}
             >
                 <p className="sr-only">And more...</p>
@@ -475,7 +483,33 @@ export const PlaceholderCard = React.memo(
         );
     }
 );
-PlaceholderCard.displayName = "PlaceholderCard";
+SinglePlaceholderCard.displayName = "SinglePlaceholderCard";
+
+export const DoublePlaceholderCard = React.memo(
+    ({ title, image }: InterativeZonesCardProps) => {
+        return (
+            <div
+                className={clsx(
+                    "overflow-visible relative",
+                    COMMON_CARD_ROUNDED,
+                    "flex items-center justify-center",
+                    COMMON_CARD_BASE
+                )}
+            >
+                <p className="sr-only">And more...</p>
+
+                <Image
+                    src="/images/interactiveZone/placeholder.svg"
+                    alt="Placeholder"
+                    width={170.6}
+                    height={269}
+                    className="w-[170.6px] h-[269px] md:w-auto md:h-[365px] object-contain z-10 absolute top-[-13px] left-1/2 -translate-x-1/2"
+                />
+            </div>
+        );
+    }
+);
+DoublePlaceholderCard.displayName = "DoublePlaceholderCard";
 
 export const YellowBlobCard = React.memo(
     ({ title, image }: InterativeZonesCardProps) => {
@@ -484,12 +518,12 @@ export const YellowBlobCard = React.memo(
                 role="article"
                 aria-label={`Interactive zone: ${title}`}
                 style={{
-                    background: YELLOW_GRADIENT_BG,
+                    background: "var(--color-yellow-gradient-start)",
                 }}
                 className={clsx(
                     "relative overflow-hidden",
                     COMMON_CARD_BASE,
-                    "lg:w-[215px] lg:h-[165px] xl:w-[234.5px] xl:h-[201px]",
+                    "lg:h-[201px]",
                     COMMON_CARD_ROUNDED,
                     COMMON_CARD_PADDING
                 )}
@@ -508,7 +542,7 @@ export const YellowBlobCard = React.memo(
                         className="object-cover"
                     />
                 </div>
-                <div className="w-[255px] h-[100px] md:hidden lg:block xl:block lg:w-[180px] xl:w-[255px] z-1 lg:h-[60px] xl:h-[100px] text-purple absolute top-[43px] left-[-72px] lg:top-[113px] lg:left-[-40px] xl:left-[-51px] pointer-events-none">
+                <div className="w-[255px] h-[100px] md:hidden lg:block xl:block lg:w-[180px] xl:w-[255px] z-1 lg:h-[60px] xl:h-[100px] absolute top-[43px] left-[-72px] lg:top-[113px] lg:left-[-40px] xl:left-[-51px] pointer-events-none">
                     <div
                         className="blur-[10.8466px] w-full h-full"
                         style={{
@@ -520,7 +554,7 @@ export const YellowBlobCard = React.memo(
                     src="/images/interactiveZone/yellowBlobs.svg"
                     alt="yellow blob"
                     fill
-                    className="absolute inset-0 pointer-events-none "
+                    className="absolute inset-0 pointer-events-none"
                 />
             </div>
         );

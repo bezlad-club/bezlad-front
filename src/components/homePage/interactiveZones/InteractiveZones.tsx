@@ -8,7 +8,7 @@ export default function InteractiveZones() {
     return (
         <section className="py-25">
             <Container>
-                <div className="mb-22 md:mb-26 lg:mb-20 flex flex-col lg:items-center lg:flex-row gap-4.5 lg:gap-8">
+                <div className="mb-22 md:mb-26 lg:mb-20 xl:mb-[34px] flex flex-col lg:items-center lg:flex-row gap-[14px] lg:gap-8">
                     <SectionTitle>Інтерактивні зони</SectionTitle>
                     <motion.p
                         initial="hidden"
@@ -23,9 +23,8 @@ export default function InteractiveZones() {
                         })}
                         className="text-[16px] leading-[120%] font-light lg:max-w-[296px]"
                     >
-                        Деревина, вода, пісок,{" "}
-                        <br className="hidden lg:block" /> рослини - тут про
-                        природу, гармонію, заземлення та спокій.
+                        Деревина, вода, пісок, <br /> рослини - тут про природу,
+                        гармонію, заземлення та спокій.
                     </motion.p>
                 </div>
                 <motion.div

@@ -29,13 +29,20 @@ export const getMobileSlides = (slides: InteractiveZoneItem[]) => {
         MOBILE_CARDS_PER_SLIDE - (slides.length % MOBILE_CARDS_PER_SLIDE);
     const newSlides = [...slides];
     if (missingSlides > 0) {
-        for (let i = 0; i < missingSlides; i++) {
+        if (missingSlides === 1) {
             newSlides.push({
                 id: newSlides.length + 1,
                 title: "",
                 image: "",
-                card: "placeholder",
-                desktopId: 0,
+                card: "singlePlaceholder",
+            });
+        }
+        if (missingSlides === 2) {
+            newSlides.push({
+                id: newSlides.length + 1,
+                title: "",
+                image: "",
+                card: "doublePlaceholder",
             });
         }
     }
@@ -47,26 +54,56 @@ export const getTabletSlides = (slides: InteractiveZoneItem[]) => {
         TABLET_CARDS_PER_SLIDE - (slides.length % TABLET_CARDS_PER_SLIDE);
     const newSlides = [...slides];
     if (missingSlides > 0) {
-        for (let i = 0; i < missingSlides; i++) {
+        if (missingSlides === 1) {
             newSlides.push({
                 id: newSlides.length + 1,
                 title: "",
                 image: "",
-                card: "placeholder",
-                desktopId: 0,
+                card: "doublePlaceholder",
+            });
+        }
+        if (missingSlides === 2) {
+            newSlides.push({
+                id: newSlides.length + 1,
+                title: "",
+                image: "",
+                card: "doublePlaceholder",
             });
         }
     }
     return chunkArray(newSlides, TABLET_CARDS_PER_SLIDE);
 };
 
+export interface DesktopSlideLayout {
+    verticalCard: InteractiveZoneItem;
+    topRow: InteractiveZoneItem[];
+    bottomRow: InteractiveZoneItem[];
+    isVerticalOnLeft: boolean;
+}
+
 export const getDesktopSlides = (
     slides: InteractiveZoneItem[]
-): InteractiveZoneItem[][][] => {
-    const chunks = chunkArray(slides, DESKTOP_CARDS_PER_SLIDE);
-    return chunks.map((chunk, chunkIndex) =>
-        chunkDesktopArray(chunk, chunkIndex % 2 === 0)
-    );
+): DesktopSlideLayout[] => {
+    // Create a map for quick lookup by ID
+    const itemsById = new Map(slides.map(item => [item.id, item]));
+
+    // Slide 1: top row - id3, bot row - id4, id2, vertical card on the right: id1
+    const slide1: DesktopSlideLayout = {
+        verticalCard: itemsById.get(1)!,
+        topRow: [itemsById.get(3)!].filter(Boolean),
+        bottomRow: [itemsById.get(4)!, itemsById.get(2)!].filter(Boolean),
+        isVerticalOnLeft: false,
+    };
+
+    // Slide 2: top row - id7, id9, bot row - id5, id6, id10, vertical card on the left: id8
+    const slide2: DesktopSlideLayout = {
+        verticalCard: itemsById.get(8)!,
+        topRow: [itemsById.get(7)!, itemsById.get(9)!].filter(Boolean),
+        bottomRow: [itemsById.get(5)!, itemsById.get(6)!, itemsById.get(10)!].filter(Boolean),
+        isVerticalOnLeft: true,
+    };
+
+    return [slide1, slide2].filter(slide => slide.verticalCard);
 };
 
 export const getSlides = (
