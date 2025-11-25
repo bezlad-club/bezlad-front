@@ -1,22 +1,26 @@
 export const navList = [
-    {
-        label: "Ціни",
-        href: "#price-list",
-    },
-    {
-        label: "Переваги",
-        href: "#advantages",
-    },
-    {
-        label: "Послуги няні",
-        href: "#cta-order",
-    },
-    {
-        label: "Галерея",
-        href: "#gallery",
-    },
-    {
-        label: "FAQ",
-        href: "#faq",
-    },
+  {
+    label: "Ціни",
+    href: "#price-list",
+  },
+  {
+    label: "Зони",
+    href: "#interactive-zones",
+  },
+  {
+    label: "Переваги",
+    href: "#advantages",
+  },
+  {
+    label: "Послуги няні",
+    href: "#cta-order",
+  },
+  {
+    label: "Галерея",
+    href: "#gallery",
+  },
+  {
+    label: "FAQ",
+    href: "#faq",
+  },
 ];
