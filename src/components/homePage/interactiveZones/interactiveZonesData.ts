@@ -35,7 +35,7 @@ export const interactiveZonesData: InteractiveZoneItem[] = [
     {
         id: 5,
         title: "Магнітна стіна",
-        image: "/images/interactiveZone/magnetWall.webp",
+        image: "/images/interactiveZone/magnetWallMob.webp",
         card: "purpleBlob",
     },
     {
@@ -76,7 +76,7 @@ export const interactiveZonesData: InteractiveZoneItem[] = [
     {
         id: 10,
         title: "Стіна Pixel art",
-        image: "/images/interactiveZone/noodlesWall.webp",
+        image: "/images/interactiveZone/pixelArtWallMob.webp",
         card: "yellowNoodle",
     },
     {
@@ -89,7 +89,7 @@ export const interactiveZonesData: InteractiveZoneItem[] = [
     {
         id: 3,
         title: "Велика пісочниця",
-        image: "/images/interactiveZone/bigSandbox.webp",
+        image: "/images/interactiveZone/bigSandboxMob.webp",
         card: "yellowBlob",
     },
 ];
