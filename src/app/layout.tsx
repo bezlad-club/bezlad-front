@@ -90,6 +90,23 @@ export default function RootLayout({
             `,
           }}
         />
+        <Script
+          id="google-analytics"
+          strategy="afterInteractive"
+          src="https://www.googletagmanager.com/gtag/js?id=G-XSG1M8EQZ0"
+        />
+        <Script
+          id="google-analytics-init"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-XSG1M8EQZ0');
+            `,
+          }}
+        />
       </body>
     </html>
   );
