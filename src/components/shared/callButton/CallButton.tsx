@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import * as motion from "motion/react-client";
+import { motion } from "motion/react";
 import { headerVariants } from "@/utils/animationVariants";
 import PhoneIcon from "../icons/PhoneIcon";
 import TelegramIcon from "../icons/TelegramIcon";

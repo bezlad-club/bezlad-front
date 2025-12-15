@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import * as motion from "motion/react-client";
+import { motion } from "motion/react";
 import { fadeInAnimation, headerVariants } from "@/utils/animationVariants";
 import MainButton from "@/components/shared/buttons/MainButton";
 import Container from "@/components/shared/container/Container";

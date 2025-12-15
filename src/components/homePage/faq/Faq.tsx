@@ -1,4 +1,6 @@
-import * as motion from "motion/react-client";
+"use client";
+
+import { motion } from "motion/react";
 import { fadeInAnimation } from "@/utils/animationVariants";
 import Container from "@/components/shared/container/Container";
 import SectionTitle from "@/components/shared/titles/SectionTitle";

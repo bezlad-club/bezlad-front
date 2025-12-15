@@ -4,7 +4,7 @@ import { Service } from "@/types/service";
 import { SwiperWrapper } from "@/components/shared/swiper/SwiperWrapper";
 import { SwiperSlide } from "swiper/react";
 import { useScreenWidth } from "@/hooks/useScreenWidth";
-import { motion } from "framer-motion";
+import { motion } from "motion/react";
 import { listVariants, listItemVariants } from "@/utils/animationVariants";
 import AnimatedArrow from "@/components/shared/animatedArrow/AnimatedArrow";
 import SpecialCard from "./SpecialCard";

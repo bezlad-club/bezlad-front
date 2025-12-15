@@ -3,14 +3,14 @@ import { useState } from "react";
 import Container from "../container/Container";
 import Navigation from "./navigation/Navigation";
 import clsx from "clsx";
-import { useScroll, useMotionValueEvent } from "framer-motion";
+import { useScroll, useMotionValueEvent } from "motion/react";
 import MainButton from "../buttons/MainButton";
 import Logo from "../icons/Logo";
 import StarIcon from "../icons/StarIcon";
 import Link from "next/link";
 import BurgerButton from "./burgerMenu/BurgerButton";
 import BurgerMenu from "./burgerMenu/BurgerMenu";
-import * as motion from "motion/react-client";
+import { motion } from "motion/react";
 import { headerVariants } from "@/utils/animationVariants";
 
 export default function Header() {

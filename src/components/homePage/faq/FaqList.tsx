@@ -1,5 +1,5 @@
 import FaqItem from "./FaqItem";
-import * as motion from "motion/react-client";
+import { motion } from "motion/react";
 import { headerVariants } from "@/utils/animationVariants";
 
 export default function FaqList() {

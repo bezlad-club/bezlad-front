@@ -1,5 +1,4 @@
-"use client";
-import * as motion from "motion/react-client";
+import { motion } from "motion/react";
 import { fadeInAnimation } from "@/utils/animationVariants";
 import Link from "next/link";
 

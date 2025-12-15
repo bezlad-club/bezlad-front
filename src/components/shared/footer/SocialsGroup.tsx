@@ -5,7 +5,7 @@ import {
   TELEGRAM_URL,
 } from "@/constants/constants";
 import { fadeInAnimation } from "@/utils/animationVariants";
-import * as motion from "motion/react-client";
+import { motion } from "motion/react";
 import { twMerge } from "tailwind-merge";
 import FacebookIcon from "../icons/FacebookIcon";
 import TelegramIcon from "../icons/TelegramIcon";

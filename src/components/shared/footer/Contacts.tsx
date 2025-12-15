@@ -7,7 +7,7 @@ import {
 } from "@/constants/constants";
 import { contactsPhoneRegex } from "@/regex/regex";
 import { fadeInAnimation, listVariants } from "@/utils/animationVariants";
-import * as motion from "motion/react-client";
+import { motion } from "motion/react";
 
 interface ContactsProps {
   className?: string;

@@ -1,8 +1,10 @@
+"use client";
+
 import Link from "next/link";
 import Container from "../shared/container/Container";
 import MainButton from "../shared/buttons/MainButton";
 import ConfirmationImages from "./ConfirmationImages";
-import * as motion from "motion/react-client";
+import { motion } from "motion/react";
 import { fadeInAnimation } from "@/utils/animationVariants";
 
 export default function Confirmation() {

@@ -1,3 +1,5 @@
+"use client";
+
 import Container from "../container/Container";
 import StarIcon from "../icons/StarIcon";
 import SocialsGroup from "./SocialsGroup";
@@ -5,7 +7,7 @@ import Contacts from "./Contacts";
 import Image from "next/image";
 import Rights from "./Rights";
 import RulesButton from "./RulesButton";
-import * as motion from "motion/react-client";
+import { motion } from "motion/react";
 import { fadeInAnimation } from "@/utils/animationVariants";
 import FooterText from "./FooterText";
 import PublicOfferButton from "./PublicOfferButton";

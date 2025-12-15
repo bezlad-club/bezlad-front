@@ -7,7 +7,7 @@ import Navigation from "../navigation/Navigation";
 import ContactUsHeader from "./ContactUsHeader";
 import Image from "next/image";
 import AnimatedArrow from "../../animatedArrow/AnimatedArrow";
-import * as motion from "motion/react-client";
+import { motion } from "motion/react";
 import { fadeInAnimation } from "@/utils/animationVariants";
 import ContactUsModal from "../../contactUsModal/ContactUsModal";
 

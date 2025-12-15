@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Container from "@/components/shared/container/Container";
 import CTAOrderImages from "./CTAOrderImages";
-import * as motion from "motion/react-client";
+import { motion } from "motion/react";
 import { fadeInAnimation, headerVariants } from "@/utils/animationVariants";
 import BabySittingModal from "@/components/homePage/ctaOrder/BabySittingModal";
 import MainButton from "@/components/shared/buttons/MainButton";

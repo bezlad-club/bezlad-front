@@ -6,7 +6,7 @@ import {
   useTransform,
   animate,
   useInView,
-} from "framer-motion";
+} from "motion/react";
 import { listItemVariantsLeft } from "@/utils/animationVariants";
 
 interface BenefitItemProps {

@@ -1,6 +1,6 @@
 import StarIcon from "@/components/shared/icons/StarIcon";
 import Image from "next/image";
-import * as motion from "motion/react-client";
+import { motion } from "motion/react";
 import { fadeInAnimation } from "@/utils/animationVariants";
 
 export default function CTAImages() {
