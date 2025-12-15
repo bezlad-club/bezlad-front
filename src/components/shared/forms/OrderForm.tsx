@@ -124,7 +124,7 @@ export default function OrderForm({
             loadingText="Надсилання..."
             className="h-14 px-5 lg:px-5 text-[14px] lg:text-[16px]"
           >
-            Забронювати відвідування
+            ПЕРЕЙТИ ДО ОПЛАТИ
           </MainButton>
         </Form>
       )}
