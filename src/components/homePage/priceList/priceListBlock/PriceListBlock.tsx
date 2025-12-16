@@ -11,20 +11,39 @@ import SpecialCard from "./SpecialCard";
 import dynamic from "next/dynamic";
 import Pagination from "@/components/shared/pagination/Pagination";
 import { useRef, useState } from "react";
+import CartModal from "@/components/shared/cart/CartModal";
 import OrderModal from "@/components/shared/orderModal/OrderModal";
+import { useCart } from "@/hooks/useCart";
 
 function PriceListBlock({ services }: { services: Service[] }) {
   const screenWidth = useScreenWidth();
+  const [isCartModalShown, setIsCartModalShown] = useState(false);
   const [isOrderModalShown, setIsOrderModalShown] = useState(false);
-  const [selectedPaymentUrl, setSelectedPaymentUrl] = useState<
-    string | undefined
-  >(undefined);
+
+  const {
+    cart,
+    addItem,
+    removeItem,
+    updateQuantity,
+    clearCart,
+    isInCart,
+    getItemQuantity,
+  } = useCart();
 
   const isMobileView = screenWidth < 640;
 
   const itemsPerPage = 3;
 
   const sectionRef = useRef<HTMLDivElement | null>(null);
+
+  const handleOpenCart = () => {
+    setIsCartModalShown(true);
+  };
+
+  const handleCheckout = () => {
+    setIsCartModalShown(false);
+    setIsOrderModalShown(true);
+  };
 
   if (isMobileView) {
     return (
@@ -60,10 +79,10 @@ function PriceListBlock({ services }: { services: Service[] }) {
                   >
                     <PriceListCard
                       {...service}
-                      onBookClick={(paymentUrl) => {
-                        setSelectedPaymentUrl(paymentUrl);
-                        setIsOrderModalShown(true);
-                      }}
+                      onAddToCart={addItem}
+                      onOpenCart={handleOpenCart}
+                      isInCart={isInCart(service.title)}
+                      cartQuantity={getItemQuantity(service.title)}
                     />
                   </motion.li>
                 ))}
@@ -72,10 +91,22 @@ function PriceListBlock({ services }: { services: Service[] }) {
           />
         </motion.div>
         <SpecialCard />
+        <CartModal
+          isModalShown={isCartModalShown}
+          setIsModalShown={setIsCartModalShown}
+          items={cart.items}
+          totalAmount={cart.totalAmount}
+          totalItems={cart.totalItems}
+          onUpdateQuantity={updateQuantity}
+          onRemoveItem={removeItem}
+          onCheckout={handleCheckout}
+        />
         <OrderModal
           isModalShown={isOrderModalShown}
           setIsModalShown={setIsOrderModalShown}
-          paymentUrl={selectedPaymentUrl}
+          cartItems={cart.items}
+          totalAmount={cart.totalAmount}
+          onClearCart={clearCart}
         />
       </>
     );
@@ -116,20 +147,32 @@ function PriceListBlock({ services }: { services: Service[] }) {
             <SwiperSlide key={index}>
               <PriceListCard
                 {...service}
-                onBookClick={(paymentUrl) => {
-                  setSelectedPaymentUrl(paymentUrl);
-                  setIsOrderModalShown(true);
-                }}
+                onAddToCart={addItem}
+                onOpenCart={handleOpenCart}
+                isInCart={isInCart(service.title)}
+                cartQuantity={getItemQuantity(service.title)}
               />
             </SwiperSlide>
           ))}
         </SwiperWrapper>
         <SpecialCard />
       </motion.div>
+      <CartModal
+        isModalShown={isCartModalShown}
+        setIsModalShown={setIsCartModalShown}
+        items={cart.items}
+        totalAmount={cart.totalAmount}
+        totalItems={cart.totalItems}
+        onUpdateQuantity={updateQuantity}
+        onRemoveItem={removeItem}
+        onCheckout={handleCheckout}
+      />
       <OrderModal
         isModalShown={isOrderModalShown}
         setIsModalShown={setIsOrderModalShown}
-        paymentUrl={selectedPaymentUrl}
+        cartItems={cart.items}
+        totalAmount={cart.totalAmount}
+        onClearCart={clearCart}
       />
     </>
   );

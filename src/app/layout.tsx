@@ -9,6 +9,7 @@ import Footer from "@/components/shared/footer/Footer";
 import CallButton from "@/components/shared/callButton/CallButton";
 import schemaOrgData from "@/constants/schemaOrgData.json";
 import Script from "next/script";
+import { CartProvider } from "@/contexts/CartContext";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://bezlad.com";
 
@@ -66,10 +67,12 @@ export default function RootLayout({
       <body
         className={`${raleway.variable} ${azbuka.variable} ${montserrat.variable} flex min-h-screen flex-col text-[16px] font-normal leading-[120%] antialiased`}
       >
-        <Header />
-        <main className="flex-1 overflow-hidden"> {children}</main>
-        <Footer />
-        <CallButton />
+        <CartProvider>
+          <Header />
+          <main className="flex-1 overflow-hidden"> {children}</main>
+          <Footer />
+          <CallButton />
+        </CartProvider>
         <Script
           id="schema-org"
           type="application/ld+json"

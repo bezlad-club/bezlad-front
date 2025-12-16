@@ -14,3 +14,10 @@ export const INSTAGRAM_URL = "https://www.instagram.com/bezladclub/";
 export const FACEBOOK_URL =
   "https://www.facebook.com/profile.php?id=61583475467985";
 export const TELEGRAM_URL = "https://t.me/Bezladclub";
+
+export const CART_STORAGE_KEY = "bezlad_cart";
+export const MIN_ITEMS_PER_SERVICE = 1;
+export const MAX_ITEMS_PER_SERVICE = 99;
+export const CART_BADGE_MAX_DISPLAY = 9;
+export const BUTTON_ANIMATION_DURATION = 600;
+export const CART_UPDATE_DEBOUNCE = 100;

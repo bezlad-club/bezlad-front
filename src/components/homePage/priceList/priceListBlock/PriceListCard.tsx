@@ -4,9 +4,14 @@ import MainButton from "@/components/shared/buttons/MainButton";
 import Image from "next/image";
 import { breakWords } from "@/utils/breakWords";
 import { urlForSanityImage } from "@/utils/getUrlForSanityImage";
+import { useState } from "react";
+import { BUTTON_ANIMATION_DURATION } from "@/constants/constants";
 
 interface PriceListCardProps extends Service {
-  onBookClick?: (paymentUrl?: string) => void;
+  onAddToCart?: (service: Service) => void;
+  onOpenCart?: () => void;
+  isInCart?: boolean;
+  cartQuantity?: number;
 }
 
 export default function PriceListCard({
@@ -15,10 +20,24 @@ export default function PriceListCard({
   description,
   paymentUrl,
   image,
-  onBookClick,
+  onAddToCart,
+  onOpenCart,
+  isInCart = false,
+  cartQuantity = 0,
 }: PriceListCardProps) {
   const brokenTitle = breakWords(title);
   const imageUrl = urlForSanityImage(image).url();
+  const [isAdding, setIsAdding] = useState(false);
+
+  const handleClick = () => {
+    if (isInCart) {
+      onOpenCart?.();
+    } else {
+      setIsAdding(true);
+      onAddToCart?.({ title, price, description, paymentUrl, image });
+      setTimeout(() => setIsAdding(false), BUTTON_ANIMATION_DURATION);
+    }
+  };
   return (
     <div className="relative flex flex-col items-center justify-center w-full xl:w-[285px] md:h-[336px] rounded-[15px] bg-white/6 overflow-hidden backdrop-blur-[18px] webkit-backdrop-blur-[18px] p-0.5 will-change-transform will-change-backdrop-filter">
       {/* Gradient border layer */}
@@ -61,11 +80,13 @@ export default function PriceListCard({
         </p>
 
         <MainButton
-          className="w-full h-[52px] text-[14px] leading-[120%]"
+          className={`w-full h-[52px] text-[14px] leading-[120%] transition-all duration-300 ${
+            isInCart ? "bg-purple-light text-black" : ""
+          } ${isAdding ? "scale-95" : ""}`}
           variant="white"
-          onClick={() => onBookClick?.(paymentUrl)}
+          onClick={handleClick}
         >
-          Забронювати відвідування
+          {isInCart ? `В корзині (${cartQuantity})` : "Додати в корзину"}
         </MainButton>
       </div>
     </div>

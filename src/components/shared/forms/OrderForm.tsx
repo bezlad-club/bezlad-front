@@ -7,6 +7,8 @@ import { useOrderFormValidation } from "@/schemas/orderFormValidation";
 
 import CustomizedInput from "../formComponents/CustomizedInput";
 import MainButton from "../buttons/MainButton";
+import { CartItem } from "@/types/cart";
+import { getPriceValue } from "@/utils/getPriceValue";
 
 export interface ValuesOrderFormType {
   name: string;
@@ -20,7 +22,8 @@ interface OrderFormProps {
   setIsNotificationShown: Dispatch<SetStateAction<boolean>>;
   setIsModalShown?: Dispatch<SetStateAction<boolean>>;
   className?: string;
-  paymentUrl?: string;
+  cartItems?: CartItem[];
+  onClearCart?: () => void;
 }
 
 export default function OrderForm({
@@ -28,7 +31,8 @@ export default function OrderForm({
   setIsNotificationShown,
   setIsModalShown,
   className = "",
-  paymentUrl,
+  cartItems = [],
+  onClearCart,
 }: OrderFormProps) {
   const [isLoading, setIsLoading] = useState(false);
 
@@ -46,38 +50,40 @@ export default function OrderForm({
     formikHelpers: FormikHelpers<ValuesOrderFormType>
   ) => {
     const { resetForm } = formikHelpers;
-    const data =
-      `<b>Заявка "Форма бронювання відвідування"</b>\n` +
-      `<b>Ім'я:</b> ${values.name.trim()}\n` +
-      `<b>Телефон:</b> ${values.phone.trim().replace(/(?!^)\D/g, "")}\n` +
-      `<b>Email:</b> ${values.email.trim()}\n` +
-      `<b>Побажання:</b> ${values.message.trim()}\n`;
+
     try {
       setIsError(false);
       setIsLoading(true);
 
-      await axios({
-        method: "post",
-        url: "/api/telegram",
-        data,
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      if (cartItems.length > 0) {
+        const telegramData =
+          `<b>Заявка "Форма бронювання відвідування"</b>\n` +
+          `<b>Ім'я:</b> ${values.name.trim()}\n` +
+          `<b>Телефон:</b> ${values.phone.trim().replace(/(?!^)\D/g, "")}\n` +
+          `<b>Email:</b> ${values.email.trim()}\n` +
+          `<b>Побажання:</b> ${values.message.trim()}\n`;
 
-      // Переадресація на оплату, якщо є paymentUrl
-      if (paymentUrl) {
-        setTimeout(() => {
-          window.location.href = paymentUrl;
-        }, 100);
+        await axios({
+          method: "post",
+          url: "/api/telegram",
+          data: telegramData,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        // TODO: API endpoint /api/way-for-pay/create-payment
+        // const paymentResponse = await axios.post("/api/way-for-pay/create-payment", {...});
+        // onClearCart?.();
+        // window.location.href = paymentResponse.data.paymentUrl;
+
+        resetForm();
+        if (setIsModalShown) {
+          setIsModalShown(false);
+        }
+        setIsNotificationShown(true);
         return;
       }
-
-      resetForm();
-      if (setIsModalShown) {
-        setIsModalShown(false);
-      }
-      setIsNotificationShown(true);
     } catch (error) {
       setIsError(true);
       if (setIsModalShown) {

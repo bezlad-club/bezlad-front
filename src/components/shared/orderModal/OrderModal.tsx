@@ -4,17 +4,23 @@ import Modal from "../modals/Modal";
 import Backdrop from "../backdrop/Backdrop";
 import NotificationPopUp from "../notifications/NotificationPopUp";
 import OrderForm from "../forms/OrderForm";
+import { CartItem } from "@/types/cart";
+import CartSummary from "../cart/CartSummary";
 
 interface OrderModalProps {
   isModalShown: boolean;
   setIsModalShown: Dispatch<SetStateAction<boolean>>;
-  paymentUrl?: string;
+  cartItems?: CartItem[];
+  totalAmount?: number;
+  onClearCart?: () => void;
 }
 
 export default function OrderModal({
   isModalShown,
   setIsModalShown,
-  paymentUrl,
+  cartItems = [],
+  totalAmount = 0,
+  onClearCart,
 }: OrderModalProps) {
   const [isNotificationShown, setIsNotificationShown] = useState(false);
   const [isError, setIsError] = useState(false);
@@ -31,17 +37,25 @@ export default function OrderModal({
               scrollbar-track-rounded-full scrollbar-thumb-purple scrollbar-track-purple/10"
         >
           <h2 className="mb-4 font-azbuka text-[24px] lg:text-[35px] font-normal leading-[120%] text-center uppercase">
-            Забронюйте відвідування
+            Оформлення замовлення
           </h2>
-          <p className="mb-7 lg:mb-4 text-[14px] font-normal leading-[120%] text-center">
+          <p className="mb-6 lg:mb-4 text-[14px] font-normal leading-[120%] text-center">
             Ми замінили шум і хаос на пісок, воду, зелень і гармонію, де дітям
             цікаво, а батькам — спокійно
           </p>
+
+          <CartSummary
+            items={cartItems}
+            totalAmount={totalAmount}
+            className="mb-6"
+          />
+
           <OrderForm
             setIsError={setIsError}
             setIsNotificationShown={setIsNotificationShown}
             setIsModalShown={setIsModalShown}
-            paymentUrl={paymentUrl}
+            cartItems={cartItems}
+            onClearCart={onClearCart}
           />
         </div>
       </Modal>
@@ -52,7 +66,7 @@ export default function OrderModal({
         description={
           isError
             ? "Спробуйте відправити форму пізніше або зателефонуйте нам."
-            : "Ми отримали вашу оплату. Найближчим часом ми зв’яжемось із вами, щоб підтвердити деталі візиту."
+            : "Перенаправляємо вас на сторінку оплати..."
         }
         isPopUpShown={isNotificationShown}
         setIsPopUpShown={setIsNotificationShown}
