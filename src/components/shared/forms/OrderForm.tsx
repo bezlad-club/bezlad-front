@@ -1,5 +1,5 @@
 "use client";
-import { Form, Formik, FormikHelpers } from "formik";
+import { Form, Formik } from "formik";
 import axios from "axios";
 import { Dispatch, SetStateAction, useState } from "react";
 
@@ -8,7 +8,6 @@ import { useOrderFormValidation } from "@/schemas/orderFormValidation";
 import CustomizedInput from "../formComponents/CustomizedInput";
 import MainButton from "../buttons/MainButton";
 import { CartItem } from "@/types/cart";
-import { getPriceValue } from "@/utils/getPriceValue";
 
 export interface ValuesOrderFormType {
   name: string;
@@ -32,7 +31,6 @@ export default function OrderForm({
   setIsModalShown,
   className = "",
   cartItems = [],
-  onClearCart,
 }: OrderFormProps) {
   const [isLoading, setIsLoading] = useState(false);
 
@@ -47,9 +45,7 @@ export default function OrderForm({
 
   const submitForm = async (
     values: ValuesOrderFormType,
-    formikHelpers: FormikHelpers<ValuesOrderFormType>
   ) => {
-    const { resetForm } = formikHelpers;
 
     try {
       setIsError(false);
@@ -72,16 +68,28 @@ export default function OrderForm({
           },
         });
 
-        // TODO: API endpoint /api/way-for-pay/create-payment
-        // const paymentResponse = await axios.post("/api/way-for-pay/create-payment", {...});
-        // onClearCart?.();
-        // window.location.href = paymentResponse.data.paymentUrl;
+        const paymentResponse = await axios.post("/api/way-for-pay/purchase", {
+          cartItems: cartItems.map((item) => ({
+            _id: item._id,
+            quantity: item.quantity,
+          })),
+          clientInfo: {
+            name: values.name,
+            phone: values.phone,
+            email: values.email,
+          },
+        });
 
-        resetForm();
-        if (setIsModalShown) {
-          setIsModalShown(false);
+        const { url } = paymentResponse.data;
+        if (url) {
+          window.location.href = url;
+        } else {
+          console.error("No payment URL returned");
+          setIsError(true);
         }
-        setIsNotificationShown(true);
+
+        // Do not reset or clear cart immediately, let the redirect happen
+        // resetForm();
         return;
       }
     } catch (error) {

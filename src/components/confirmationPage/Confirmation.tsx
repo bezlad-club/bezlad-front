@@ -6,8 +6,18 @@ import MainButton from "../shared/buttons/MainButton";
 import ConfirmationImages from "./ConfirmationImages";
 import { motion } from "motion/react";
 import { fadeInAnimation } from "@/utils/animationVariants";
+import { useEffect } from "react";
+import { useCart } from "@/hooks/useCart";
 
 export default function Confirmation() {
+  const { cart, clearCart } = useCart();
+
+  useEffect(() => {
+    if (cart.items.length > 0) {
+      clearCart();
+    }
+  }, [cart.items.length, clearCart]);
+
   return (
     <section className="">
       <Container className="relative pt-[173px] lg:pt-48 pb-[347px] lg:pb-[432px]">

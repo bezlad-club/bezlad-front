@@ -1,5 +1,6 @@
 export const ALL_SERVICES_QUERY = `*[_type == "service"]
   | order(menuOrder asc, title asc) {
+    _id,
     title,
     description,
     price,
@@ -14,6 +15,12 @@ export const ALL_SERVICES_QUERY = `*[_type == "service"]
       }
     }
   }`;
+
+export const SERVICES_BY_IDS_QUERY = `*[_type == "service" && _id in $ids] {
+  _id,
+  title,
+  price
+}`;
 
 export const GALLERY_IMAGES = `*[_type == "gallery"][0]{
   photo1{

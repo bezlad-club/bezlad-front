@@ -15,6 +15,7 @@ interface PriceListCardProps extends Service {
 }
 
 export default function PriceListCard({
+  _id,
   title,
   price,
   description,
@@ -34,7 +35,7 @@ export default function PriceListCard({
       onOpenCart?.();
     } else {
       setIsAdding(true);
-      onAddToCart?.({ title, price, description, paymentUrl, image });
+      onAddToCart?.({ _id, title, price, description, paymentUrl, image });
       setTimeout(() => setIsAdding(false), BUTTON_ANIMATION_DURATION);
     }
   };
