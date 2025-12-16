@@ -133,7 +133,7 @@ export async function POST(req: NextRequest) {
       clientPhone: clientInfo?.phone,
       clientEmail: clientInfo?.email,
       defaultPaymentSystem: "card",
-      returnUrl: `${NEXT_PUBLIC_SITE_URL}/confirmation`,
+      returnUrl: `${NEXT_PUBLIC_SITE_URL}/api/confirmation`,
       serviceUrl: `${NEXT_PUBLIC_SITE_URL}/api/way-for-pay/callback`,
     };
 
