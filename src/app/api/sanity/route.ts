@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { client } from "@/lib/sanityClient";
+import { client } from "@/lib/sanityServerClient";
 
 export async function POST(req: NextRequest) {
   const { query, params } = await req.json();

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import axios from "axios";
+import { client } from "@/lib/sanityServerClient";
+import { promoCodeService } from "@/lib/promoCodeService";
+import { RESERVATION_FOR_CALLBACK_QUERY } from "@/lib/queries";
 
 const MERCHANT_SECRET_KEY = process.env.MERCHANT_SECRET_KEY;
 
@@ -47,21 +50,52 @@ export async function POST(req: NextRequest) {
     let statusMessage = "";
     let orderStatus = "";
 
+    // Find reservation linked to this order
+    const reservation = await client.fetch(
+      RESERVATION_FOR_CALLBACK_QUERY,
+      { ref: orderReference }
+    );
+
     if (transactionStatus === "Approved") {
       statusMessage = `✅ Платіж успішний: Замовлення #${orderReference} оплачено на суму ${amount} грн.`;
       orderStatus = "accept";
 
       // Відправка повідомлення через Telegram
-      await axios({
-        method: "post",
-        url: `${process.env.NEXT_PUBLIC_SITE_URL}/api/telegram`,
-        data: statusMessage,
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      try {
+        await axios({
+          method: "post",
+          url: `${process.env.NEXT_PUBLIC_SITE_URL}/api/telegram`,
+          data: statusMessage,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+      } catch (err) {
+        console.error("Telegram notification failed:", err);
+      }
+
+      // Confirm promo code usage
+      if (reservation) {
+        try {
+          await promoCodeService.confirm(reservation._id, orderReference);
+          console.log(`Promo code confirmed for reservation ${reservation._id}`);
+        } catch (err) {
+          console.error(`Failed to confirm promo code for reservation ${reservation._id}:`, err);
+        }
+      }
+
     } else {
       orderStatus = "decline";
+      
+      // Cancel promo code reservation if declined
+      if (reservation && reservation.status === 'reserved') {
+        try {
+           await promoCodeService.cancel(reservation._id);
+           console.log(`Promo code cancelled for reservation ${reservation._id}`);
+        } catch (err) {
+           console.error(`Failed to cancel promo code for reservation ${reservation._id}:`, err);
+        }
+      }
     }
 
     // Формуємо підпис для відповіді WayForPay

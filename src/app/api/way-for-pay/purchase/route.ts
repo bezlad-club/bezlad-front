@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import axios from "axios";
 import { getPriceValue } from "@/utils/getPriceValue";
-import { client } from "@/lib/sanityClient";
-import { SERVICES_BY_IDS_QUERY } from "@/lib/queries";
+import { client } from "@/lib/sanityServerClient";
+import { SERVICES_BY_IDS_QUERY, RESERVATION_FOR_VALIDATION_QUERY } from "@/lib/queries";
 
 const MERCHANT_ACCOUNT = process.env.MERCHANT_ACCOUNT;
 const MERCHANT_SECRET_KEY = process.env.MERCHANT_SECRET_KEY;
@@ -31,10 +31,44 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { cartItems, clientInfo } = body;
+    const { cartItems, clientInfo, reservationId } = body;
 
     if (!cartItems || !Array.isArray(cartItems) || cartItems.length === 0) {
       return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
+    }
+
+    // 1. Validate Reservation if present
+    let discountPercent = 0;
+    let orderTimeout = 43200; // Default 12 hours if no promo code
+
+    if (reservationId) {
+      const reservation = await client.fetch(
+        RESERVATION_FOR_VALIDATION_QUERY,
+        { id: reservationId }
+      );
+
+      if (!reservation) {
+        return NextResponse.json({ error: "Reservation not found" }, { status: 400 });
+      }
+      if (reservation.status !== 'reserved') {
+        return NextResponse.json({ error: "Reservation is not active" }, { status: 400 });
+      }
+
+      const now = new Date();
+      const validUntil = new Date(reservation.validUntil);
+
+      if (validUntil < now) {
+        return NextResponse.json({ error: "Reservation expired" }, { status: 400 });
+      }
+
+      // Set timeout to remaining seconds of reservation
+      const diffSeconds = Math.floor((validUntil.getTime() - now.getTime()) / 1000);
+      if (diffSeconds <= 0) {
+          return NextResponse.json({ error: "Reservation expired just now" }, { status: 400 });
+      }
+
+      discountPercent = Math.min(Math.max(reservation.promoCode.discountPercent, 0), 100);
+      orderTimeout = diffSeconds;
     }
 
     // Fetch actual prices from Sanity using only IDs
@@ -83,7 +117,13 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      const price = getPriceValue(sanityProduct.price);
+      let price = getPriceValue(sanityProduct.price);
+      
+      // Apply discount per item
+      if (discountPercent > 0) {
+        price = price * (1 - discountPercent / 100);
+      }
+
       // Ensure title matches Sanity and clean it
       const name = sanityProduct.title.replace(/;/g, " ");
 
@@ -97,6 +137,14 @@ export async function POST(req: NextRequest) {
     // Format amounts to 2 decimal places
     const formattedAmount = totalAmount.toFixed(2);
     const formattedPrices = productPrices.map((p) => p.toFixed(2));
+
+    // Link Order to Reservation in Sanity
+    if (reservationId) {
+       await client.patch(reservationId).set({
+         orderReference,
+         finalAmount: Number(formattedAmount)
+       }).commit();
+    }
 
     // Signature generation
     // merchantAccount;merchantDomainName;orderReference;orderDate;amount;currency;productName;productCount;productPrice
@@ -133,6 +181,7 @@ export async function POST(req: NextRequest) {
       clientPhone: clientInfo?.phone,
       clientEmail: clientInfo?.email,
       defaultPaymentSystem: "card",
+      orderTimeout,
       returnUrl: `${NEXT_PUBLIC_SITE_URL}/api/confirmation`,
       serviceUrl: `${NEXT_PUBLIC_SITE_URL}/api/way-for-pay/callback`,
     };

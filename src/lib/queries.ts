@@ -1,4 +1,6 @@
-export const ALL_SERVICES_QUERY = `*[_type == "service"]
+import { defineQuery } from "next-sanity";
+
+export const ALL_SERVICES_QUERY = defineQuery(`*[_type == "service"]
   | order(menuOrder asc, title asc) {
     _id,
     title,
@@ -14,15 +16,15 @@ export const ALL_SERVICES_QUERY = `*[_type == "service"]
         url
       }
     }
-  }`;
+  }`);
 
-export const SERVICES_BY_IDS_QUERY = `*[_type == "service" && _id in $ids] {
+export const SERVICES_BY_IDS_QUERY = defineQuery(`*[_type == "service" && _id in $ids] {
   _id,
   title,
   price
-}`;
+}`);
 
-export const GALLERY_IMAGES = `*[_type == "gallery"][0]{
+export const GALLERY_IMAGES_QUERY = defineQuery(`*[_type == "gallery"][0]{
   photo1{
     crop,
     hotspot,
@@ -68,4 +70,31 @@ export const GALLERY_IMAGES = `*[_type == "gallery"][0]{
       metadata {dimensions}
     }
   }
-}`;
+}`);
+
+export const PROMO_CODE_BY_CODE_QUERY = defineQuery(`*[_type == "promoCode" && code == $code][0]`);
+
+export const PROMO_CODE_BY_ID_QUERY = defineQuery(`*[_id == $id][0]`);
+
+export const PROMO_CODE_BY_ID_TYPE_ONLY_QUERY = defineQuery(`*[_id == $id][0]{type}`);
+
+export const ACTIVE_RESERVATIONS_COUNT_QUERY = defineQuery(`count(*[_type == "promoCodeReservation" && promoCode._ref == $id && status == "reserved" && validUntil > now()])`);
+
+export const RESERVATION_BY_ID_QUERY = defineQuery(`*[_type == "promoCodeReservation" && _id == $id][0]`);
+
+export const RESERVATION_FOR_VALIDATION_QUERY = defineQuery(`*[_type == "promoCodeReservation" && _id == $id][0]{
+  status,
+  validUntil,
+  promoCode->{
+    discountPercent
+  }
+}`);
+
+export const RESERVATION_FOR_CALLBACK_QUERY = defineQuery(`*[_type == "promoCodeReservation" && orderReference == $ref][0]{
+  _id,
+  status,
+  validUntil,
+  promoCode
+}`);
+
+export const EXPIRED_RESERVATIONS_QUERY = defineQuery(`*[_type == "promoCodeReservation" && status == "reserved" && validUntil < now()]`);
