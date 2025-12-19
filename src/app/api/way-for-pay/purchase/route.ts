@@ -3,6 +3,7 @@ import crypto from "crypto";
 import axios from "axios";
 import { getPriceValue } from "@/utils/getPriceValue";
 import { client } from "@/lib/sanityServerClient";
+import { promoCodeService } from "@/lib/promoCodeService";
 import { SERVICES_BY_IDS_QUERY, RESERVATION_FOR_VALIDATION_QUERY } from "@/lib/queries";
 
 const MERCHANT_ACCOUNT = process.env.MERCHANT_ACCOUNT;
@@ -31,10 +32,25 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { cartItems, clientInfo, reservationId } = body;
+    const { cartItems, clientInfo, promo } = body;
+    let reservationId: string | undefined;
 
     if (!cartItems || !Array.isArray(cartItems) || cartItems.length === 0) {
       return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
+    }
+
+    if (promo) {
+      try {
+         const newReservation = await promoCodeService.reserve(promo);
+         reservationId = newReservation.reservationId;
+      } catch (err: unknown) {
+         // If promo code fails (invalid, limit reached, etc.), we return error immediately
+         const errorMessage = err instanceof Error ? err.message : "Invalid promo code";
+         return NextResponse.json(
+            { error: errorMessage },
+            { status: 400 }
+         );
+      }
     }
 
     // 1. Validate Reservation if present
