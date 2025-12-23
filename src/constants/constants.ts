@@ -21,3 +21,16 @@ export const MAX_ITEMS_PER_SERVICE = 99;
 export const CART_BADGE_MAX_DISPLAY = 9;
 export const BUTTON_ANIMATION_DURATION = 600;
 export const CART_UPDATE_DEBOUNCE = 100;
+
+export const PROMO_CODE_VALIDATION_DEBOUNCE = 300;
+export const PROMO_CODE_INPUT_MAX_LENGTH = 10;
+
+export const PROMO_CODE_ERRORS = {
+  INVALID_CODE: "Промо-код не знайдено",
+  EXPIRED: "Промо-код закінчився",
+  INACTIVE: "Промо-код не активний",
+  MAX_USES: "Промо-код вичерпано",
+  GENERIC: "Не вдалося застосувати промо-код",
+};
+
+export const PROMO_CODE_SUCCESS = "Промо-код успішно застосовано!";

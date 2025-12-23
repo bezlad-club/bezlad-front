@@ -8,6 +8,7 @@ import { useOrderFormValidation } from "@/schemas/orderFormValidation";
 import CustomizedInput from "../formComponents/CustomizedInput";
 import MainButton from "../buttons/MainButton";
 import { CartItem } from "@/types/cart";
+import { AppliedPromo } from "@/types/promoCode";
 
 export interface ValuesOrderFormType {
   name: string;
@@ -22,6 +23,7 @@ interface OrderFormProps {
   setIsModalShown?: Dispatch<SetStateAction<boolean>>;
   className?: string;
   cartItems?: CartItem[];
+  appliedPromo?: AppliedPromo | null;
   onClearCart?: () => void;
 }
 
@@ -31,6 +33,7 @@ export default function OrderForm({
   setIsModalShown,
   className = "",
   cartItems = [],
+  appliedPromo,
 }: OrderFormProps) {
   const [isLoading, setIsLoading] = useState(false);
 
@@ -78,6 +81,7 @@ export default function OrderForm({
             phone: values.phone,
             email: values.email,
           },
+          promo: appliedPromo?.code,
         });
 
         const { url } = paymentResponse.data;

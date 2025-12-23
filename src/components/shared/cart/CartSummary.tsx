@@ -1,15 +1,19 @@
 import { CartItem } from "@/types/cart";
+import { AppliedPromo } from "@/types/promoCode";
 import CartSummaryItem from "./CartSummaryItem";
+import PromoCodeDisplay from "../promoCode/PromoCodeDisplay";
 
 interface CartSummaryProps {
   items: CartItem[];
   totalAmount: number;
+  appliedPromo?: AppliedPromo | null;
   className?: string;
 }
 
 export default function CartSummary({
   items,
   totalAmount,
+  appliedPromo,
   className = "",
 }: CartSummaryProps) {
   if (items.length === 0) return null;
@@ -21,12 +25,26 @@ export default function CartSummary({
       </h3>
       <ul className="flex flex-col gap-2 mb-3">
         {items.map((item) => (
-          <CartSummaryItem key={item.id} item={item} />
+          <CartSummaryItem
+            key={item.id}
+            item={item}
+            appliedPromo={appliedPromo}
+          />
         ))}
       </ul>
-      <div className="flex justify-between items-center pt-3 border-t border-purple-light">
-        <p className="font-bold text-[16px]">Загалом:</p>
-        <p className="font-bold text-[20px]">{totalAmount} грн</p>
+      <div className="pt-3 border-t border-purple-light">
+        {appliedPromo ? (
+          <PromoCodeDisplay
+            code={appliedPromo.code}
+            discountPercent={appliedPromo.discountPercent}
+            originalAmount={totalAmount}
+          />
+        ) : (
+          <div className="flex justify-between items-center">
+            <p className="font-bold text-[16px]">Загалом:</p>
+            <p className="font-bold text-[20px]">{totalAmount} грн</p>
+          </div>
+        )}
       </div>
     </div>
   );
