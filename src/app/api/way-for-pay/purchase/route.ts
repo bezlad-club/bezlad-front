@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import crypto from "crypto";
 import axios from "axios";
 import { getPriceValue } from "@/utils/getPriceValue";
@@ -161,6 +161,10 @@ export async function POST(req: NextRequest) {
          finalAmount: Number(formattedAmount)
        }).commit();
     }
+
+    // Lazy cleanup of expired reservations (limited to 10 to be fast)
+    // Using 'after' to run this in the background without blocking the response
+    after(promoCodeService.cleanupExpired);
 
     // Signature generation
     // merchantAccount;merchantDomainName;orderReference;orderDate;amount;currency;productName;productCount;productPrice

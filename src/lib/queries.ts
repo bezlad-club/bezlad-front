@@ -97,4 +97,4 @@ export const RESERVATION_FOR_CALLBACK_QUERY = defineQuery(`*[_type == "promoCode
   promoCode
 }`);
 
-export const EXPIRED_RESERVATIONS_QUERY = defineQuery(`*[_type == "promoCodeReservation" && status == "reserved" && validUntil < now()]`);
+export const EXPIRED_RESERVATIONS_QUERY = defineQuery(`*[_type == "promoCodeReservation" && status == "reserved" && validUntil < now()][0...10]`);

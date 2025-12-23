@@ -5,7 +5,8 @@ import {
   PROMO_CODE_BY_ID_QUERY,
   ACTIVE_RESERVATIONS_COUNT_QUERY,
   RESERVATION_BY_ID_QUERY,
-  PROMO_CODE_BY_ID_TYPE_ONLY_QUERY
+  PROMO_CODE_BY_ID_TYPE_ONLY_QUERY,
+  EXPIRED_RESERVATIONS_QUERY
 } from "./queries";
 
 export interface PromoCode {
@@ -146,5 +147,26 @@ export const promoCodeService = {
 
   async cancel(reservationId: string) {
      return client.patch(reservationId).set({ status: 'cancelled' }).commit();
+  },
+
+  async cleanupExpired() {
+    try {
+      const expiredReservations = await client.fetch(EXPIRED_RESERVATIONS_QUERY);
+      
+      if (!expiredReservations || expiredReservations.length === 0) {
+        return;
+      }
+
+      const transaction = client.transaction();
+
+      for (const res of expiredReservations) {
+        transaction.patch(res._id, (p) => p.set({ status: 'expired' }));
+      }
+
+      await transaction.commit();
+    } catch (error) {
+      console.error("Error cleaning up expired reservations:", error);
+      // Fails silently to not disrupt the main flow
+    }
   }
 };
