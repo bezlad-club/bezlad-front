@@ -7,6 +7,15 @@ import { RESERVATION_FOR_CALLBACK_QUERY } from "@/lib/queries";
 
 const MERCHANT_SECRET_KEY = process.env.MERCHANT_SECRET_KEY;
 
+// GET endpoint to test if callback is accessible
+export async function GET() {
+  return NextResponse.json({
+    message: "Callback endpoint is accessible",
+    timestamp: new Date().toISOString(),
+    url: "/api/way-for-pay/callback",
+  });
+}
+
 export async function POST(req: NextRequest) {
   if (!MERCHANT_SECRET_KEY) {
     throw new Error("MERCHANT_SECRET_KEY не визначено в середовищі!");
