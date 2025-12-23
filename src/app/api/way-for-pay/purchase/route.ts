@@ -4,7 +4,10 @@ import axios from "axios";
 import { getPriceValue } from "@/utils/getPriceValue";
 import { client } from "@/lib/sanityServerClient";
 import { promoCodeService } from "@/lib/promoCodeService";
-import { SERVICES_BY_IDS_QUERY, RESERVATION_FOR_VALIDATION_QUERY } from "@/lib/queries";
+import {
+  SERVICES_BY_IDS_QUERY,
+  RESERVATION_FOR_VALIDATION_QUERY,
+} from "@/lib/queries";
 
 const MERCHANT_ACCOUNT = process.env.MERCHANT_ACCOUNT;
 const MERCHANT_SECRET_KEY = process.env.MERCHANT_SECRET_KEY;
@@ -41,15 +44,13 @@ export async function POST(req: NextRequest) {
 
     if (promo) {
       try {
-         const newReservation = await promoCodeService.reserve(promo);
-         reservationId = newReservation.reservationId;
+        const newReservation = await promoCodeService.reserve(promo);
+        reservationId = newReservation.reservationId;
       } catch (err: unknown) {
-         // If promo code fails (invalid, limit reached, etc.), we return error immediately
-         const errorMessage = err instanceof Error ? err.message : "Invalid promo code";
-         return NextResponse.json(
-            { error: errorMessage },
-            { status: 400 }
-         );
+        // If promo code fails (invalid, limit reached, etc.), we return error immediately
+        const errorMessage =
+          err instanceof Error ? err.message : "Invalid promo code";
+        return NextResponse.json({ error: errorMessage }, { status: 400 });
       }
     }
 
@@ -58,32 +59,48 @@ export async function POST(req: NextRequest) {
     let orderTimeout = 43200; // Default 12 hours if no promo code
 
     if (reservationId) {
-      const reservation = await client.fetch(
-        RESERVATION_FOR_VALIDATION_QUERY,
-        { id: reservationId }
-      );
+      const reservation = await client.fetch(RESERVATION_FOR_VALIDATION_QUERY, {
+        id: reservationId,
+      });
 
       if (!reservation) {
-        return NextResponse.json({ error: "Reservation not found" }, { status: 400 });
+        return NextResponse.json(
+          { error: "Reservation not found" },
+          { status: 400 }
+        );
       }
-      if (reservation.status !== 'reserved') {
-        return NextResponse.json({ error: "Reservation is not active" }, { status: 400 });
+      if (reservation.status !== "reserved") {
+        return NextResponse.json(
+          { error: "Reservation is not active" },
+          { status: 400 }
+        );
       }
 
       const now = new Date();
       const validUntil = new Date(reservation.validUntil);
 
       if (validUntil < now) {
-        return NextResponse.json({ error: "Reservation expired" }, { status: 400 });
+        return NextResponse.json(
+          { error: "Reservation expired" },
+          { status: 400 }
+        );
       }
 
       // Set timeout to remaining seconds of reservation
-      const diffSeconds = Math.floor((validUntil.getTime() - now.getTime()) / 1000);
+      const diffSeconds = Math.floor(
+        (validUntil.getTime() - now.getTime()) / 1000
+      );
       if (diffSeconds <= 0) {
-          return NextResponse.json({ error: "Reservation expired just now" }, { status: 400 });
+        return NextResponse.json(
+          { error: "Reservation expired just now" },
+          { status: 400 }
+        );
       }
 
-      discountPercent = Math.min(Math.max(reservation.promoCode.discountPercent, 0), 100);
+      discountPercent = Math.min(
+        Math.max(reservation.promoCode.discountPercent, 0),
+        100
+      );
       orderTimeout = diffSeconds;
     }
 
@@ -134,7 +151,7 @@ export async function POST(req: NextRequest) {
       }
 
       let price = getPriceValue(sanityProduct.price);
-      
+
       // Apply discount per item
       if (discountPercent > 0) {
         price = price * (1 - discountPercent / 100);
@@ -156,10 +173,13 @@ export async function POST(req: NextRequest) {
 
     // Link Order to Reservation in Sanity
     if (reservationId) {
-       await client.patch(reservationId).set({
-         orderReference,
-         finalAmount: Number(formattedAmount)
-       }).commit();
+      await client
+        .patch(reservationId)
+        .set({
+          orderReference,
+          finalAmount: Number(formattedAmount),
+        })
+        .commit();
     }
 
     // Lazy cleanup of expired reservations (limited to 10 to be fast)
@@ -206,23 +226,50 @@ export async function POST(req: NextRequest) {
       serviceUrl: `${NEXT_PUBLIC_SITE_URL}/api/way-for-pay/callback`,
     };
 
+    console.log(
+      `[Purchase] serviceUrl: ${NEXT_PUBLIC_SITE_URL}/api/way-for-pay/callback`
+    );
+    console.log(
+      `[Purchase] returnUrl: ${NEXT_PUBLIC_SITE_URL}/api/confirmation`
+    );
+
     // Send request to WayForPay to get the payment URL
     // Using behavior=offline to get a JSON response with the URL
+    // Convert params to URL-encoded form data
+    const formData = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (Array.isArray(value)) {
+        value.forEach((item) => formData.append(key, String(item)));
+      } else if (value !== undefined && value !== null) {
+        formData.append(key, String(value));
+      }
+    });
+
+    console.log("[Purchase] Sending request to WayForPay...");
     const response = await axios.post(
       "https://secure.wayforpay.com/pay?behavior=offline",
-      params,
+      formData.toString(),
       {
         headers: {
-          // WayForPay usually expects form data
           "Content-Type": "application/x-www-form-urlencoded",
         },
       }
     );
 
+    console.log("[Purchase] WayForPay response status:", response.status);
+    console.log(
+      "[Purchase] WayForPay response data:",
+      JSON.stringify(response.data, null, 2)
+    );
+
     if (response.data && response.data.url) {
+      console.log("[Purchase] ✅ Payment URL received:", response.data.url);
       return NextResponse.json({ url: response.data.url });
     } else {
-      console.error("Unexpected response from WayForPay:", response.data);
+      console.error(
+        "[Purchase] ❌ Unexpected response from WayForPay:",
+        response.data
+      );
       return NextResponse.json(
         { error: "Failed to generate payment URL", details: response.data },
         { status: 502 }
