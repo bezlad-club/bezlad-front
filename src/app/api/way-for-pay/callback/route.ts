@@ -14,17 +14,15 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { orderReference, transactionStatus } = body;
-    console.log(
-      `[Callback] Order: ${orderReference}, Status: ${transactionStatus}`
-    );
 
     const {
       merchantAccount,
+      orderReference,
       amount,
       currency,
       authCode,
       cardPan,
+      transactionStatus,
       reasonCode,
       merchantSignature,
     } = body;
@@ -57,12 +55,6 @@ export async function POST(req: NextRequest) {
       ref: orderReference,
     });
 
-    if (!reservation) {
-      console.log(
-        `[Callback] No reservation found for order: ${orderReference}`
-      );
-    }
-
     if (transactionStatus === "Approved") {
       statusMessage = `✅ Платіж успішний: Замовлення #${orderReference} оплачено на суму ${amount} грн.`;
       orderStatus = "accept";
@@ -86,10 +78,13 @@ export async function POST(req: NextRequest) {
         try {
           await promoCodeService.confirm(reservation._id, orderReference);
           console.log(
-            `[Callback] ✅ Promo code confirmed, usageCount incremented`
+            `Promo code confirmed for reservation ${reservation._id}`
           );
         } catch (err) {
-          console.error(`[Callback] ❌ Failed to confirm promo code:`, err);
+          console.error(
+            `Failed to confirm promo code for reservation ${reservation._id}:`,
+            err
+          );
         }
       }
     } else {

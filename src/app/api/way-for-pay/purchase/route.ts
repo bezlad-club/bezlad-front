@@ -226,50 +226,23 @@ export async function POST(req: NextRequest) {
       serviceUrl: `${NEXT_PUBLIC_SITE_URL}/api/way-for-pay/callback`,
     };
 
-    console.log(
-      `[Purchase] serviceUrl: ${NEXT_PUBLIC_SITE_URL}/api/way-for-pay/callback`
-    );
-    console.log(
-      `[Purchase] returnUrl: ${NEXT_PUBLIC_SITE_URL}/api/confirmation`
-    );
-
     // Send request to WayForPay to get the payment URL
     // Using behavior=offline to get a JSON response with the URL
-    // Convert params to URL-encoded form data
-    const formData = new URLSearchParams();
-    Object.entries(params).forEach(([key, value]) => {
-      if (Array.isArray(value)) {
-        value.forEach((item) => formData.append(key, String(item)));
-      } else if (value !== undefined && value !== null) {
-        formData.append(key, String(value));
-      }
-    });
-
-    console.log("[Purchase] Sending request to WayForPay...");
     const response = await axios.post(
       "https://secure.wayforpay.com/pay?behavior=offline",
-      formData.toString(),
+      params,
       {
         headers: {
+          // WayForPay usually expects form data
           "Content-Type": "application/x-www-form-urlencoded",
         },
       }
     );
 
-    console.log("[Purchase] WayForPay response status:", response.status);
-    console.log(
-      "[Purchase] WayForPay response data:",
-      JSON.stringify(response.data, null, 2)
-    );
-
     if (response.data && response.data.url) {
-      console.log("[Purchase] ✅ Payment URL received:", response.data.url);
       return NextResponse.json({ url: response.data.url });
     } else {
-      console.error(
-        "[Purchase] ❌ Unexpected response from WayForPay:",
-        response.data
-      );
+      console.error("Unexpected response from WayForPay:", response.data);
       return NextResponse.json(
         { error: "Failed to generate payment URL", details: response.data },
         { status: 502 }
