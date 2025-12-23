@@ -10,15 +10,17 @@ import AnimatedArrow from "@/components/shared/animatedArrow/AnimatedArrow";
 import SpecialCard from "./SpecialCard";
 import dynamic from "next/dynamic";
 import Pagination from "@/components/shared/pagination/Pagination";
-import { useRef, useState } from "react";
+import { useRef, useState, useCallback } from "react";
 import CartModal from "@/components/shared/cart/CartModal";
 import OrderModal from "@/components/shared/orderModal/OrderModal";
 import { useCart } from "@/hooks/useCart";
+import { AppliedPromo } from "@/types/promoCode";
 
 function PriceListBlock({ services }: { services: Service[] }) {
   const screenWidth = useScreenWidth();
   const [isCartModalShown, setIsCartModalShown] = useState(false);
   const [isOrderModalShown, setIsOrderModalShown] = useState(false);
+  const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null);
 
   const {
     cart,
@@ -40,10 +42,12 @@ function PriceListBlock({ services }: { services: Service[] }) {
     setIsCartModalShown(true);
   };
 
-  const handleCheckout = () => {
+  const handleCheckout = useCallback((promo?: AppliedPromo | null) => {
+    const promoToUse = promo || null;
+    setAppliedPromo(promoToUse);
     setIsCartModalShown(false);
     setIsOrderModalShown(true);
-  };
+  }, []);
 
   if (isMobileView) {
     return (
@@ -100,12 +104,15 @@ function PriceListBlock({ services }: { services: Service[] }) {
           onUpdateQuantity={updateQuantity}
           onRemoveItem={removeItem}
           onCheckout={handleCheckout}
+          appliedPromo={appliedPromo}
+          onPromoChange={setAppliedPromo}
         />
         <OrderModal
           isModalShown={isOrderModalShown}
           setIsModalShown={setIsOrderModalShown}
           cartItems={cart.items}
           totalAmount={cart.totalAmount}
+          appliedPromo={appliedPromo}
           onClearCart={clearCart}
         />
       </>
@@ -166,12 +173,15 @@ function PriceListBlock({ services }: { services: Service[] }) {
         onUpdateQuantity={updateQuantity}
         onRemoveItem={removeItem}
         onCheckout={handleCheckout}
+        appliedPromo={appliedPromo}
+        onPromoChange={setAppliedPromo}
       />
       <OrderModal
         isModalShown={isOrderModalShown}
         setIsModalShown={setIsOrderModalShown}
         cartItems={cart.items}
         totalAmount={cart.totalAmount}
+        appliedPromo={appliedPromo}
         onClearCart={clearCart}
       />
     </>

@@ -5,6 +5,7 @@ import Backdrop from "../backdrop/Backdrop";
 import NotificationPopUp from "../notifications/NotificationPopUp";
 import OrderForm from "../forms/OrderForm";
 import { CartItem } from "@/types/cart";
+import { AppliedPromo } from "@/types/promoCode";
 import CartSummary from "../cart/CartSummary";
 
 interface OrderModalProps {
@@ -12,6 +13,7 @@ interface OrderModalProps {
   setIsModalShown: Dispatch<SetStateAction<boolean>>;
   cartItems?: CartItem[];
   totalAmount?: number;
+  appliedPromo?: AppliedPromo | null;
   onClearCart?: () => void;
 }
 
@@ -20,6 +22,7 @@ export default function OrderModal({
   setIsModalShown,
   cartItems = [],
   totalAmount = 0,
+  appliedPromo,
   onClearCart,
 }: OrderModalProps) {
   const [isNotificationShown, setIsNotificationShown] = useState(false);
@@ -47,6 +50,7 @@ export default function OrderModal({
           <CartSummary
             items={cartItems}
             totalAmount={totalAmount}
+            appliedPromo={appliedPromo}
             className="mb-6"
           />
 
@@ -55,6 +59,7 @@ export default function OrderModal({
             setIsNotificationShown={setIsNotificationShown}
             setIsModalShown={setIsModalShown}
             cartItems={cartItems}
+            appliedPromo={appliedPromo}
             onClearCart={onClearCart}
           />
         </div>

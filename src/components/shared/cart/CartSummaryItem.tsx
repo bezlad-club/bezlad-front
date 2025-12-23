@@ -1,15 +1,24 @@
 import Image from "next/image";
 import { CartItem } from "@/types/cart";
+import { AppliedPromo } from "@/types/promoCode";
 import { urlForSanityImage } from "@/utils/getUrlForSanityImage";
 import { getPriceValue } from "@/utils/getPriceValue";
 
 interface CartSummaryItemProps {
   item: CartItem;
+  appliedPromo?: AppliedPromo | null;
 }
 
-export default function CartSummaryItem({ item }: CartSummaryItemProps) {
+export default function CartSummaryItem({
+  item,
+  appliedPromo,
+}: CartSummaryItemProps) {
   const imageUrl = item.image ? urlForSanityImage(item.image).url() : "";
-  const itemTotal = getPriceValue(item.price) * item.quantity;
+  const originalPrice = getPriceValue(item.price);
+  const pricePerItem = appliedPromo
+    ? originalPrice * (1 - appliedPromo.discountPercent / 100)
+    : originalPrice;
+  const itemTotal = Math.round(pricePerItem * item.quantity);
 
   return (
     <li className="flex items-center gap-3 text-[14px]">
@@ -26,10 +35,10 @@ export default function CartSummaryItem({ item }: CartSummaryItemProps) {
       <div className="flex-1 min-w-0">
         <p className="font-semibold truncate">{item.title}</p>
         <p className="text-[12px] text-gray-dark">
-          {item.quantity} шт. × {item.price} грн
+          {item.quantity} шт. × {Math.round(pricePerItem)} грн
         </p>
       </div>
-      <p className="font-bold shrink-0">{itemTotal} грн</p>
+      <p className="font-bold shrink-0 font-azbuka">{itemTotal} грн</p>
     </li>
   );
 }

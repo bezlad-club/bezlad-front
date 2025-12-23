@@ -1,11 +1,15 @@
 "use client";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import Modal from "../modals/Modal";
 import Backdrop from "../backdrop/Backdrop";
 import MainButton from "../buttons/MainButton";
 import CartItem from "./CartItem";
 import EmptyCart from "./EmptyCart";
+import PromoCodeInput from "../promoCode/PromoCodeInput";
+import PromoCodeDisplay from "../promoCode/PromoCodeDisplay";
 import { CartItem as CartItemType } from "@/types/cart";
+import { AppliedPromo } from "@/types/promoCode";
+import { calculatePromoDiscount } from "@/utils/promoCodeUtils";
 
 interface CartModalProps {
   isModalShown: boolean;
@@ -15,7 +19,9 @@ interface CartModalProps {
   totalItems: number;
   onUpdateQuantity: (id: string, quantity: number) => void;
   onRemoveItem: (id: string) => void;
-  onCheckout: () => void;
+  onCheckout: (appliedPromo?: AppliedPromo | null) => void;
+  appliedPromo?: AppliedPromo | null;
+  onPromoChange?: (promo: AppliedPromo | null) => void;
 }
 
 export default function CartModal({
@@ -27,12 +33,33 @@ export default function CartModal({
   onUpdateQuantity,
   onRemoveItem,
   onCheckout,
+  appliedPromo: externalAppliedPromo,
+  onPromoChange,
 }: CartModalProps) {
   const isEmpty = items.length === 0;
+  const [localAppliedPromo, setLocalAppliedPromo] =
+    useState<AppliedPromo | null>(null);
+
+  const appliedPromo =
+    externalAppliedPromo !== undefined
+      ? externalAppliedPromo
+      : localAppliedPromo;
+
+  const discount = appliedPromo
+    ? calculatePromoDiscount(totalAmount, appliedPromo.discountPercent)
+    : 0;
+  const finalAmount = totalAmount - discount;
 
   const handleCheckout = () => {
     setIsModalShown(false);
-    onCheckout();
+    onCheckout(appliedPromo);
+  };
+
+  const handleApplyPromo = (promo: AppliedPromo) => {
+    setLocalAppliedPromo(promo);
+    if (onPromoChange) {
+      onPromoChange(promo);
+    }
   };
 
   return (
@@ -65,18 +92,35 @@ export default function CartModal({
               </div>
 
               <div className="border-t border-gray-light pt-4">
+                <PromoCodeInput
+                  onApply={handleApplyPromo}
+                  appliedCode={appliedPromo?.code}
+                />
+
+                <div className="mb-2">
+                  <p className="text-[14px] text-gray-dark font-azbuka">
+                    Всього товарів: {totalItems}
+                  </p>
+                </div>
+
+                {appliedPromo && (
+                  <div className="mb-3">
+                    <PromoCodeDisplay
+                      code={appliedPromo.code}
+                      discountPercent={appliedPromo.discountPercent}
+                      originalAmount={totalAmount}
+                    />
+                  </div>
+                )}
+
                 <div className="flex justify-between items-center mb-4">
-                  <div>
-                    <p className="text-[14px] text-gray-dark font-azbuka">
-                      Всього товарів: {totalItems}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-[24px] leading-[120%] font-azbuka">
-                      {totalAmount}{" "}
-                      <span className="text-[14px] font-azbuka">грн</span>
-                    </p>
-                  </div>
+                  <p className="font-bold text-[16px] font-azbuka">
+                    Сума до сплати:
+                  </p>
+                  <p className="font-bold text-[24px] leading-[120%] font-azbuka">
+                    {finalAmount}{" "}
+                    <span className="text-[14px] font-azbuka">грн</span>
+                  </p>
                 </div>
 
                 <MainButton

@@ -16,6 +16,7 @@ import { headerVariants } from "@/utils/animationVariants";
 import CartModal from "../cart/CartModal";
 import OrderModal from "../orderModal/OrderModal";
 import { useCart } from "@/hooks/useCart";
+import { AppliedPromo } from "@/types/promoCode";
 
 export default function Header() {
   const { scrollY } = useScroll();
@@ -23,6 +24,7 @@ export default function Header() {
   const [isHeaderMenuOpened, setIsHeaderMenuOpened] = useState(false);
   const [isCartModalOpen, setIsCartModalOpen] = useState(false);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null);
 
   const { cart, removeItem, updateQuantity, clearCart } = useCart();
 
@@ -30,7 +32,9 @@ export default function Header() {
     setScrollPosition(latest);
   });
 
-  const handleCheckout = () => {
+  const handleCheckout = (promo?: AppliedPromo | null) => {
+    const promoToUse = promo || null;
+    setAppliedPromo(promoToUse);
     setIsCartModalOpen(false);
     setIsOrderModalOpen(true);
   };
@@ -97,12 +101,15 @@ export default function Header() {
         onUpdateQuantity={updateQuantity}
         onRemoveItem={removeItem}
         onCheckout={handleCheckout}
+        appliedPromo={appliedPromo}
+        onPromoChange={setAppliedPromo}
       />
       <OrderModal
         isModalShown={isOrderModalOpen}
         setIsModalShown={setIsOrderModalOpen}
         cartItems={cart.items}
         totalAmount={cart.totalAmount}
+        appliedPromo={appliedPromo}
         onClearCart={clearCart}
       />
     </motion.header>
