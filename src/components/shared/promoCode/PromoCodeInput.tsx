@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AppliedPromo } from "@/types/promoCode";
 import { normalizePromoCode } from "@/utils/promoCodeUtils";
 import { validatePromoCode } from "@/services/promoCodeService";
@@ -27,6 +27,7 @@ export default function PromoCodeInput({
   const [errorMessage, setErrorMessage] = useState("");
   const [discountPercent, setDiscountPercent] = useState<number>(0);
   const [isApplying, setIsApplying] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Debounce validation
   useEffect(() => {
@@ -39,19 +40,38 @@ export default function PromoCodeInput({
     setValidationState("validating");
     setErrorMessage("");
 
-    const timer = setTimeout(async () => {
-      const result = await validatePromoCode(code);
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
 
-      if (result.isValid && result.discountPercent) {
-        setValidationState("valid");
-        setDiscountPercent(result.discountPercent);
-      } else {
-        setValidationState("invalid");
-        setErrorMessage(PROMO_CODE_ERRORS.INVALID_CODE);
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    const timer = setTimeout(async () => {
+      try {
+        const result = await validatePromoCode(code, controller.signal);
+
+        if (controller.signal.aborted) return;
+
+        if (result.isValid && result.discountPercent) {
+          setValidationState("valid");
+          setDiscountPercent(result.discountPercent);
+        } else {
+          setValidationState("invalid");
+          setErrorMessage(PROMO_CODE_ERRORS.INVALID_CODE);
+        }
+      } catch (error: unknown) {
+        const err = error as { name?: string; code?: string };
+        if (err?.name === "CanceledError" || err?.code === "ERR_CANCELED") {
+          return;
+        }
       }
     }, PROMO_CODE_VALIDATION_DEBOUNCE);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
   }, [code, appliedCode]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

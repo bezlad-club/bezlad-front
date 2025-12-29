@@ -133,10 +133,6 @@ export const promoCodeService = {
     );
 
     // Check if we need to deactivate personal code
-    // (Actually usageLimit handling covers it, but user said "status cancelled" explicitly)
-    // Let's stick to usageLimit logic primarily, but if type is personal, we might want to set isActive=false?
-    // User said: "промокод может быть выдан персонально(просто один после первого использования статус cancelled)"
-    // Fetch type
     const promo = await client.fetch(PROMO_CODE_BY_ID_TYPE_ONLY_QUERY, { id: reservation.promoCode._ref });
     if (promo.type === 'personal') {
        transaction.patch(reservation.promoCode._ref, (p) => p.set({ isActive: false }));
