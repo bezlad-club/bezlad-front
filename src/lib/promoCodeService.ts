@@ -30,7 +30,6 @@ export class PromoCodeError extends Error {
 export const promoCodeService = {
   async validate(code: string) {
     const promo = await client.fetch<PromoCode>(PROMO_CODE_VALIDATION_QUERY, { code });
-    console.log('promo:', promo);
 
     if (!promo) {
       throw new PromoCodeError("Промокод не знайдено", "NOT_FOUND");
@@ -142,7 +141,8 @@ export const promoCodeService = {
   async cleanupExpired() {
     try {
       const expiredReservations = await client.fetch(EXPIRED_RESERVATIONS_QUERY);
-      
+      console.log(`Cleaning up ${expiredReservations.length} expired reservations`);
+
       if (!expiredReservations || expiredReservations.length === 0) {
         return;
       }
