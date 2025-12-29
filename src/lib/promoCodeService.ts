@@ -150,7 +150,7 @@ export const promoCodeService = {
       const transaction = client.transaction();
 
       for (const res of expiredReservations) {
-        transaction.patch(res._id, (p) => p.set({ status: 'expired' }));
+        transaction.delete(res._id);
       }
 
       await transaction.commit();
