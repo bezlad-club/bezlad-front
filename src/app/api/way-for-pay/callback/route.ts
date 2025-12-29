@@ -7,6 +7,15 @@ import { RESERVATION_FOR_CALLBACK_QUERY } from "@/lib/queries";
 
 const MERCHANT_SECRET_KEY = process.env.MERCHANT_SECRET_KEY;
 
+// GET endpoint to test if callback is accessible
+export async function GET() {
+  return NextResponse.json({
+    message: "Callback endpoint is accessible",
+    timestamp: new Date().toISOString(),
+    url: "/api/way-for-pay/callback",
+  });
+}
+
 export async function POST(req: NextRequest) {
   if (!MERCHANT_SECRET_KEY) {
     throw new Error("MERCHANT_SECRET_KEY не визначено в середовищі!");
@@ -51,10 +60,9 @@ export async function POST(req: NextRequest) {
     let orderStatus = "";
 
     // Find reservation linked to this order
-    const reservation = await client.fetch(
-      RESERVATION_FOR_CALLBACK_QUERY,
-      { ref: orderReference }
-    );
+    const reservation = await client.fetch(RESERVATION_FOR_CALLBACK_QUERY, {
+      ref: orderReference,
+    });
 
     if (transactionStatus === "Approved") {
       statusMessage = `✅ Платіж успішний: Замовлення #${orderReference} оплачено на суму ${amount} грн.`;
@@ -78,22 +86,31 @@ export async function POST(req: NextRequest) {
       if (reservation) {
         try {
           await promoCodeService.confirm(reservation._id, orderReference);
-          console.log(`Promo code confirmed for reservation ${reservation._id}`);
+          console.log(
+            `Promo code confirmed for reservation ${reservation._id}`
+          );
         } catch (err) {
-          console.error(`Failed to confirm promo code for reservation ${reservation._id}:`, err);
+          console.error(
+            `Failed to confirm promo code for reservation ${reservation._id}:`,
+            err
+          );
         }
       }
-
     } else {
       orderStatus = "decline";
-      
+
       // Cancel promo code reservation if declined
-      if (reservation && reservation.status === 'reserved') {
+      if (reservation && reservation.status === "reserved") {
         try {
-           await promoCodeService.cancel(reservation._id);
-           console.log(`Promo code cancelled for reservation ${reservation._id}`);
+          await promoCodeService.cancel(reservation._id);
+          console.log(
+            `Promo code cancelled for reservation ${reservation._id}`
+          );
         } catch (err) {
-           console.error(`Failed to cancel promo code for reservation ${reservation._id}:`, err);
+          console.error(
+            `Failed to cancel promo code for reservation ${reservation._id}:`,
+            err
+          );
         }
       }
     }

@@ -4,7 +4,10 @@ import axios from "axios";
 import { getPriceValue } from "@/utils/getPriceValue";
 import { client } from "@/lib/sanityServerClient";
 import { promoCodeService } from "@/lib/promoCodeService";
-import { SERVICES_BY_IDS_QUERY, RESERVATION_FOR_VALIDATION_QUERY } from "@/lib/queries";
+import {
+  SERVICES_BY_IDS_QUERY,
+  RESERVATION_FOR_VALIDATION_QUERY,
+} from "@/lib/queries";
 
 const MERCHANT_ACCOUNT = process.env.MERCHANT_ACCOUNT;
 const MERCHANT_SECRET_KEY = process.env.MERCHANT_SECRET_KEY;
@@ -41,15 +44,13 @@ export async function POST(req: NextRequest) {
 
     if (promo) {
       try {
-         const newReservation = await promoCodeService.reserve(promo);
-         reservationId = newReservation.reservationId;
+        const newReservation = await promoCodeService.reserve(promo);
+        reservationId = newReservation.reservationId;
       } catch (err: unknown) {
-         // If promo code fails (invalid, limit reached, etc.), we return error immediately
-         const errorMessage = err instanceof Error ? err.message : "Invalid promo code";
-         return NextResponse.json(
-            { error: errorMessage },
-            { status: 400 }
-         );
+        // If promo code fails (invalid, limit reached, etc.), we return error immediately
+        const errorMessage =
+          err instanceof Error ? err.message : "Invalid promo code";
+        return NextResponse.json({ error: errorMessage }, { status: 400 });
       }
     }
 
@@ -58,32 +59,48 @@ export async function POST(req: NextRequest) {
     let orderTimeout = 43200; // Default 12 hours if no promo code
 
     if (reservationId) {
-      const reservation = await client.fetch(
-        RESERVATION_FOR_VALIDATION_QUERY,
-        { id: reservationId }
-      );
+      const reservation = await client.fetch(RESERVATION_FOR_VALIDATION_QUERY, {
+        id: reservationId,
+      });
 
       if (!reservation) {
-        return NextResponse.json({ error: "Reservation not found" }, { status: 400 });
+        return NextResponse.json(
+          { error: "Reservation not found" },
+          { status: 400 }
+        );
       }
-      if (reservation.status !== 'reserved') {
-        return NextResponse.json({ error: "Reservation is not active" }, { status: 400 });
+      if (reservation.status !== "reserved") {
+        return NextResponse.json(
+          { error: "Reservation is not active" },
+          { status: 400 }
+        );
       }
 
       const now = new Date();
       const validUntil = new Date(reservation.validUntil);
 
       if (validUntil < now) {
-        return NextResponse.json({ error: "Reservation expired" }, { status: 400 });
+        return NextResponse.json(
+          { error: "Reservation expired" },
+          { status: 400 }
+        );
       }
 
       // Set timeout to remaining seconds of reservation
-      const diffSeconds = Math.floor((validUntil.getTime() - now.getTime()) / 1000);
+      const diffSeconds = Math.floor(
+        (validUntil.getTime() - now.getTime()) / 1000
+      );
       if (diffSeconds <= 0) {
-          return NextResponse.json({ error: "Reservation expired just now" }, { status: 400 });
+        return NextResponse.json(
+          { error: "Reservation expired just now" },
+          { status: 400 }
+        );
       }
 
-      discountPercent = Math.min(Math.max(reservation.promoCode.discountPercent, 0), 100);
+      discountPercent = Math.min(
+        Math.max(reservation.promoCode.discountPercent, 0),
+        100
+      );
       orderTimeout = diffSeconds;
     }
 
@@ -134,7 +151,7 @@ export async function POST(req: NextRequest) {
       }
 
       let price = getPriceValue(sanityProduct.price);
-      
+
       // Apply discount per item
       if (discountPercent > 0) {
         price = price * (1 - discountPercent / 100);
@@ -156,10 +173,13 @@ export async function POST(req: NextRequest) {
 
     // Link Order to Reservation in Sanity
     if (reservationId) {
-       await client.patch(reservationId).set({
-         orderReference,
-         finalAmount: Number(formattedAmount)
-       }).commit();
+      await client
+        .patch(reservationId)
+        .set({
+          orderReference,
+          finalAmount: Number(formattedAmount),
+        })
+        .commit();
     }
 
     // Lazy cleanup of expired reservations (limited to 10 to be fast)
@@ -205,6 +225,17 @@ export async function POST(req: NextRequest) {
       returnUrl: `${NEXT_PUBLIC_SITE_URL}/api/confirmation`,
       serviceUrl: `${NEXT_PUBLIC_SITE_URL}/api/way-for-pay/callback`,
     };
+
+    // Log URLs and request body for debugging
+    console.log("=== WayForPay Purchase URLs ===");
+    console.log("NEXT_PUBLIC_SITE_URL:", NEXT_PUBLIC_SITE_URL);
+    console.log("serviceUrl:", params.serviceUrl);
+    console.log("returnUrl:", params.returnUrl);
+    console.log("orderReference:", params.orderReference);
+    console.log("===============================");
+    console.log("=== Request Body to WayForPay ===");
+    console.log(JSON.stringify(params, null, 2));
+    console.log("=================================");
 
     // Send request to WayForPay to get the payment URL
     // Using behavior=offline to get a JSON response with the URL
