@@ -1,9 +1,7 @@
 import { client } from "./sanityServerClient";
 
 import {
-  PROMO_CODE_BY_CODE_QUERY,
-  PROMO_CODE_BY_ID_QUERY,
-  ACTIVE_RESERVATIONS_COUNT_QUERY,
+  PROMO_CODE_VALIDATION_QUERY,
   RESERVATION_BY_ID_QUERY,
   PROMO_CODE_BY_ID_TYPE_ONLY_QUERY,
   EXPIRED_RESERVATIONS_QUERY
@@ -16,6 +14,10 @@ export interface PromoCode {
   type: 'reusable' | 'personal';
   usageLimit?: number;
   usageCount: number;
+  isActive?: boolean;
+  validFrom?: string;
+  validUntil?: string;
+  activeReservationsCount: number;
 }
 
 export class PromoCodeError extends Error {
@@ -27,7 +29,8 @@ export class PromoCodeError extends Error {
 
 export const promoCodeService = {
   async validate(code: string) {
-    const promo = await client.fetch<PromoCode>(PROMO_CODE_BY_CODE_QUERY, { code });
+    const promo = await client.fetch<PromoCode>(PROMO_CODE_VALIDATION_QUERY, { code });
+    console.log('promo:', promo);
 
     if (!promo) {
       throw new PromoCodeError("Промокод не знайдено", "NOT_FOUND");
@@ -35,49 +38,40 @@ export const promoCodeService = {
 
     // Basic checks
     const now = new Date();
-    // Fetch full doc to check dates as string/dates might need parsing if not typed
-    // But in Sanity queries we can filter by dates too. 
-    // Let's do a more robust query next time, but for now logic here:
-    
-    // We need to re-fetch with more fields to be safe or update the interface
-    const fullPromo = await client.fetch(PROMO_CODE_BY_ID_QUERY, { id: promo._id });
-    
-    if (!fullPromo.isActive) {
+
+    if (!promo.isActive) {
       throw new PromoCodeError("Промокод неактивний", "INACTIVE");
     }
 
-    if (fullPromo.validFrom && new Date(fullPromo.validFrom) > now) {
+    if (promo.validFrom && new Date(promo.validFrom) > now) {
       throw new PromoCodeError("Термін дії промокоду ще не настав", "NOT_STARTED");
     }
 
-    if (fullPromo.validUntil && new Date(fullPromo.validUntil) < now) {
+    if (promo.validUntil && new Date(promo.validUntil) < now) {
       throw new PromoCodeError("Термін дії промокоду закінчився", "EXPIRED");
     }
 
-    if (fullPromo.usageLimit && fullPromo.usageCount >= fullPromo.usageLimit) {
+    if (promo.usageLimit && promo.usageCount >= promo.usageLimit) {
       throw new PromoCodeError("Ліміт використання вичерпано", "LIMIT_REACHED");
     }
 
     // Check active reservations
     // We count 'reserved' status where validUntil is in the future
-    const activeReservationsCount = await client.fetch(
-      ACTIVE_RESERVATIONS_COUNT_QUERY,
-      { id: promo._id }
-    );
+    const activeReservationsCount = promo.activeReservationsCount || 0;
 
     // If it's a personal code (limit 1 implicitly or explicitly) or has a limit
     // We check if (current_usage + reserved) >= limit
-    const limit = fullPromo.usageLimit || (fullPromo.type === 'personal' ? 1 : Infinity);
+    const limit = promo.usageLimit || (promo.type === 'personal' ? 1 : Infinity);
     
-    if (fullPromo.usageCount + activeReservationsCount >= limit) {
+    if (promo.usageCount + activeReservationsCount >= limit) {
       throw new PromoCodeError("Промокод тимчасово зарезервований або використаний", "TEMPORARILY_UNAVAILABLE");
     }
 
     return {
       isValid: true,
-      discountPercent: fullPromo.discountPercent,
-      code: fullPromo.code,
-      _id: fullPromo._id
+      discountPercent: promo.discountPercent,
+      code: promo.code,
+      _id: promo._id
     };
   },
 

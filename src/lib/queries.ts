@@ -72,13 +72,12 @@ export const GALLERY_IMAGES_QUERY = defineQuery(`*[_type == "gallery"][0]{
   }
 }`);
 
-export const PROMO_CODE_BY_CODE_QUERY = defineQuery(`*[_type == "promoCode" && code == $code][0]`);
-
-export const PROMO_CODE_BY_ID_QUERY = defineQuery(`*[_id == $id][0]`);
+export const PROMO_CODE_VALIDATION_QUERY = defineQuery(`*[_type == "promoCode" && code == $code][0] {
+  ...,
+  "activeReservationsCount": count(*[_type == "promoCodeReservation" && promoCode._ref == ^._id && status == "reserved" && validUntil > now()])
+}`);
 
 export const PROMO_CODE_BY_ID_TYPE_ONLY_QUERY = defineQuery(`*[_id == $id][0]{type}`);
-
-export const ACTIVE_RESERVATIONS_COUNT_QUERY = defineQuery(`count(*[_type == "promoCodeReservation" && promoCode._ref == $id && status == "reserved" && validUntil > now()])`);
 
 export const RESERVATION_BY_ID_QUERY = defineQuery(`*[_type == "promoCodeReservation" && _id == $id][0]`);
 
