@@ -141,7 +141,6 @@ export const promoCodeService = {
   async cleanupExpired() {
     try {
       const expiredReservations = await client.fetch(EXPIRED_RESERVATIONS_QUERY);
-      console.log(`Cleaning up ${expiredReservations.length} expired reservations`);
 
       if (!expiredReservations || expiredReservations.length === 0) {
         return;

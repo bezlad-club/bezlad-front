@@ -226,17 +226,6 @@ export async function POST(req: NextRequest) {
       serviceUrl: `${NEXT_PUBLIC_SITE_URL}/api/way-for-pay/callback`,
     };
 
-    // Log URLs and request body for debugging
-    console.log("=== WayForPay Purchase URLs ===");
-    console.log("NEXT_PUBLIC_SITE_URL:", NEXT_PUBLIC_SITE_URL);
-    console.log("serviceUrl:", params.serviceUrl);
-    console.log("returnUrl:", params.returnUrl);
-    console.log("orderReference:", params.orderReference);
-    console.log("===============================");
-    console.log("=== Request Body to WayForPay ===");
-    console.log(JSON.stringify(params, null, 2));
-    console.log("=================================");
-
     // Send request to WayForPay to get the payment URL
     // Using behavior=offline to get a JSON response with the URL
     const response = await axios.post(
