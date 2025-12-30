@@ -22,6 +22,20 @@ export default function CartSummary({
   const discount = appliedPromo
     ? calculatePromoDiscount(items, appliedPromo)
     : 0;
+  
+  const isPromoApplicable = appliedPromo
+    ? items.some((item) =>
+        appliedPromo.applicableServices?.includes(item._id || "")
+      )
+    : false;
+
+  const isPartialPromo =
+    isPromoApplicable &&
+    appliedPromo &&
+    appliedPromo.applicableServices &&
+    items.some(
+      (item) => !appliedPromo.applicableServices!.includes(item._id || "")
+    );
 
   return (
     <div className={`p-4 rounded-[12px] bg-purple-ultra-light ${className}`}>
@@ -44,6 +58,7 @@ export default function CartSummary({
             discountPercent={appliedPromo.discountPercent}
             originalAmount={totalAmount}
             discountAmount={discount}
+            isPartial={isPartialPromo || false}
           />
         ) : (
           <div className="flex justify-between items-center">

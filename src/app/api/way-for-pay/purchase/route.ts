@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
 
     // 1. Validate Reservation if present
     let discountPercent = 0;
-    let applicableServices: string[] | null = null;
+    let applicableServices: string[] = [];
     let orderTimeout = 43200; // Default 12 hours if no promo code
 
     if (reservationId) {
@@ -98,12 +98,30 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      discountPercent = Math.min(
-        Math.max(reservation.promoCode.discountPercent, 0),
-        100
-      );
-      applicableServices = reservation.promoCode.applicableServices;
-      orderTimeout = diffSeconds;
+      // Check if promo applies to ANY item in the cart
+      const cartHasApplicableItems = reservation.promoCode.applicableServices?.some(
+        (serviceId: string) => productIds.includes(serviceId)
+      ) ?? false;
+
+      // If no items in cart match the promo's applicable services, we ignore the promo
+      // but we do NOT throw error to let purchase proceed without discount
+      if (!cartHasApplicableItems) {
+        console.warn(
+          "Promo code ignored: no applicable items in cart for reservation",
+          reservationId
+        );
+        discountPercent = 0;
+        applicableServices = [];
+        // Revert to default timeout since promo is effectively not used
+        orderTimeout = 43200;
+      } else {
+        discountPercent = Math.min(
+          Math.max(reservation.promoCode.discountPercent, 0),
+          100
+        );
+        applicableServices = reservation.promoCode.applicableServices;
+        orderTimeout = diffSeconds;
+      }
     }
 
     // Fetch actual prices from Sanity using only IDs

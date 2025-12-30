@@ -48,6 +48,24 @@ export default function CartModal({
   const discount = appliedPromo
     ? calculatePromoDiscount(items, appliedPromo)
     : 0;
+  
+  // Check if promo applies to at least one item
+  const isPromoApplicable = appliedPromo
+    ? items.some((item) =>
+        appliedPromo.applicableServices?.includes(item._id || "")
+      )
+    : false;
+
+  // Check if promo is partial (applies to some but not all items)
+  // Logic: if promo has applicableServices AND there is at least one item in cart NOT in that list
+  const isPartialPromo =
+    isPromoApplicable &&
+    appliedPromo &&
+    appliedPromo.applicableServices &&
+    items.some(
+      (item) => !appliedPromo.applicableServices!.includes(item._id || "")
+    );
+
   const finalAmount = totalAmount - discount;
 
   const handleCheckout = () => {
@@ -86,6 +104,7 @@ export default function CartModal({
                       item={item}
                       onUpdateQuantity={onUpdateQuantity}
                       onRemove={onRemoveItem}
+                      appliedPromo={appliedPromo}
                     />
                   ))}
                 </div>
@@ -105,12 +124,19 @@ export default function CartModal({
 
                 {appliedPromo && (
                   <div className="mb-3">
-                    <PromoCodeDisplay
-                      code={appliedPromo.code}
-                      discountPercent={appliedPromo.discountPercent}
-                      originalAmount={totalAmount}
-                      discountAmount={discount}
-                    />
+                    {isPromoApplicable ? (
+                      <PromoCodeDisplay
+                        code={appliedPromo.code}
+                        discountPercent={appliedPromo.discountPercent}
+                        originalAmount={totalAmount}
+                        discountAmount={discount}
+                        isPartial={isPartialPromo || false}
+                      />
+                    ) : (
+                      <div className="text-red-500 text-[12px] font-azbuka">
+                        Промо-код не застосовується до товарів у кошику
+                      </div>
+                    )}
                   </div>
                 )}
 

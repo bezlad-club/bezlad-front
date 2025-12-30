@@ -7,19 +7,35 @@ import CrossIcon from "../icons/CrossIcon";
 import { getPriceValue } from "@/utils/getPriceValue";
 import QuantityControl from "./QuantityControl";
 
+import { AppliedPromo } from "@/types/promoCode";
+
 interface CartItemProps {
   item: CartItemType;
   onUpdateQuantity: (id: string, quantity: number) => void;
   onRemove: (id: string) => void;
+  appliedPromo?: AppliedPromo | null;
 }
 
 export default function CartItem({
   item,
   onUpdateQuantity,
   onRemove,
+  appliedPromo,
 }: CartItemProps) {
   const imageUrl = item.image ? urlForSanityImage(item.image).url() : "";
-  const itemTotal = getPriceValue(item.price) * item.quantity;
+  const originalPrice = getPriceValue(item.price);
+
+  const isApplicable =
+    appliedPromo?.applicableServices &&
+    item._id &&
+    appliedPromo.applicableServices.includes(item._id);
+
+  const pricePerItem =
+    appliedPromo && isApplicable
+      ? originalPrice * (1 - appliedPromo.discountPercent / 100)
+      : originalPrice;
+
+  const itemTotal = Math.round(pricePerItem * item.quantity);
 
   return (
     <div className="flex gap-4 p-4 rounded-[12px] bg-white lg:bg-gray border border-gray-light transition-all duration-300 hover:shadow-md">
@@ -62,12 +78,27 @@ export default function CartItem({
           />
 
           <div className="flex flex-col items-end">
-            <p className="font-bold text-[18px] leading-[120%] font-azbuka">
-              {itemTotal} <span className="text-[12px] font-azbuka">грн</span>
-            </p>
+            <div className="flex flex-col items-end">
+              {isApplicable && appliedPromo ? (
+                <>
+                  <p className="font-bold text-[18px] leading-[120%] font-azbuka text-purple">
+                    {itemTotal}{" "}
+                    <span className="text-[12px] font-azbuka">грн</span>
+                  </p>
+                  <p className="text-[12px] text-gray-dark line-through font-azbuka">
+                    {originalPrice * item.quantity} грн
+                  </p>
+                </>
+              ) : (
+                <p className="font-bold text-[18px] leading-[120%] font-azbuka">
+                  {itemTotal}{" "}
+                  <span className="text-[12px] font-azbuka">грн</span>
+                </p>
+              )}
+            </div>
             {item.quantity > 1 && (
               <p className="text-[10px] text-gray-dark font-azbuka">
-                {item.price} × {item.quantity}
+                {Math.round(pricePerItem)} × {item.quantity}
               </p>
             )}
           </div>
