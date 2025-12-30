@@ -42,6 +42,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
     }
 
+    const productIds = cartItems
+      .filter((item: Item) => item._id)
+      .map((item: Item) => item._id);
+
+    if (productIds.length === 0) {
+      return NextResponse.json(
+        { error: "Invalid cart data: missing product IDs" },
+        { status: 400 }
+      );
+    }
+
     if (promo) {
       try {
         const newReservation = await promoCodeService.reserve(promo);
@@ -125,17 +136,6 @@ export async function POST(req: NextRequest) {
     }
 
     // Fetch actual prices from Sanity using only IDs
-    const productIds = cartItems
-      .filter((item: Item) => item._id)
-      .map((item: Item) => item._id);
-
-    if (productIds.length === 0) {
-      return NextResponse.json(
-        { error: "Invalid cart data: missing product IDs" },
-        { status: 400 }
-      );
-    }
-
     const sanityProducts = await client.fetch<SanityProduct[]>(
       SERVICES_BY_IDS_QUERY,
       {
