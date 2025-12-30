@@ -15,9 +15,11 @@ export interface PromoCodeValidation {
   discountPercent?: number;
   code?: string;
   _id?: string;
+  applicableServices?: string[];
 }
 
 export interface AppliedPromo {
   code: string;
   discountPercent: number;
+  applicableServices?: string[];
 }

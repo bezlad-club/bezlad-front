@@ -15,9 +15,17 @@ export default function CartSummaryItem({
 }: CartSummaryItemProps) {
   const imageUrl = item.image ? urlForSanityImage(item.image).url() : "";
   const originalPrice = getPriceValue(item.price);
-  const pricePerItem = appliedPromo
-    ? originalPrice * (1 - appliedPromo.discountPercent / 100)
-    : originalPrice;
+
+  const isApplicable =
+    appliedPromo?.applicableServices &&
+    item._id &&
+    appliedPromo.applicableServices.includes(item._id);
+
+  const pricePerItem =
+    appliedPromo && isApplicable
+      ? originalPrice * (1 - appliedPromo.discountPercent / 100)
+      : originalPrice;
+
   const itemTotal = Math.round(pricePerItem * item.quantity);
 
   return (

@@ -56,6 +56,7 @@ export async function POST(req: NextRequest) {
 
     // 1. Validate Reservation if present
     let discountPercent = 0;
+    let applicableServices: string[] | null = null;
     let orderTimeout = 43200; // Default 12 hours if no promo code
 
     if (reservationId) {
@@ -101,6 +102,7 @@ export async function POST(req: NextRequest) {
         Math.max(reservation.promoCode.discountPercent, 0),
         100
       );
+      applicableServices = reservation.promoCode.applicableServices;
       orderTimeout = diffSeconds;
     }
 
@@ -154,7 +156,13 @@ export async function POST(req: NextRequest) {
 
       // Apply discount per item
       if (discountPercent > 0) {
-        price = price * (1 - discountPercent / 100);
+        if (
+          applicableServices &&
+          applicableServices.length > 0 &&
+          applicableServices.includes(item._id)
+        ) {
+          price = price * (1 - discountPercent / 100);
+        }
       }
 
       // Ensure title matches Sanity and clean it

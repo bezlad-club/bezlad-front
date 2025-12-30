@@ -74,7 +74,8 @@ export const GALLERY_IMAGES_QUERY = defineQuery(`*[_type == "gallery"][0]{
 
 export const PROMO_CODE_VALIDATION_QUERY = defineQuery(`*[_type == "promoCode" && code == $code][0] {
   ...,
-  "activeReservationsCount": count(*[_type == "promoCodeReservation" && promoCode._ref == ^._id && status == "reserved" && validUntil > now()])
+  "activeReservationsCount": count(*[_type == "promoCodeReservation" && promoCode._ref == ^._id && status == "reserved" && validUntil > now()]),
+  "applicableServices": applicableServices[]->._id
 }`);
 
 export const PROMO_CODE_BY_ID_TYPE_ONLY_QUERY = defineQuery(`*[_id == $id][0]{type}`);
@@ -85,7 +86,8 @@ export const RESERVATION_FOR_VALIDATION_QUERY = defineQuery(`*[_type == "promoCo
   status,
   validUntil,
   promoCode->{
-    discountPercent
+    discountPercent,
+    "applicableServices": applicableServices[]->._id
   }
 }`);
 

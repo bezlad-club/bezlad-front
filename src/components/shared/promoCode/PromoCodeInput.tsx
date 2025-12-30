@@ -26,6 +26,7 @@ export default function PromoCodeInput({
     useState<ValidationState>("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [discountPercent, setDiscountPercent] = useState<number>(0);
+  const [applicableServices, setApplicableServices] = useState<string[] | undefined>(undefined);
   const [isApplying, setIsApplying] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -56,6 +57,7 @@ export default function PromoCodeInput({
         if (result.isValid && result.discountPercent) {
           setValidationState("valid");
           setDiscountPercent(result.discountPercent);
+          setApplicableServices(result.applicableServices);
         } else {
           setValidationState("invalid");
           setErrorMessage(PROMO_CODE_ERRORS.INVALID_CODE);
@@ -88,6 +90,7 @@ export default function PromoCodeInput({
     onApply({
       code: normalizePromoCode(code),
       discountPercent: discountPercent,
+      applicableServices,
     });
     setIsApplying(false);
   };

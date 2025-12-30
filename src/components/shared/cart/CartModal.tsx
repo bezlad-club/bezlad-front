@@ -46,7 +46,7 @@ export default function CartModal({
       : localAppliedPromo;
 
   const discount = appliedPromo
-    ? calculatePromoDiscount(totalAmount, appliedPromo.discountPercent)
+    ? calculatePromoDiscount(items, appliedPromo)
     : 0;
   const finalAmount = totalAmount - discount;
 
@@ -109,6 +109,7 @@ export default function CartModal({
                       code={appliedPromo.code}
                       discountPercent={appliedPromo.discountPercent}
                       originalAmount={totalAmount}
+                      discountAmount={discount}
                     />
                   </div>
                 )}

@@ -1,9 +1,9 @@
-import { calculatePromoDiscount } from "@/utils/promoCodeUtils";
 
 interface PromoCodeDisplayProps {
   code: string;
   discountPercent: number;
   originalAmount: number;
+  discountAmount: number;
   className?: string;
 }
 
@@ -11,10 +11,10 @@ export default function PromoCodeDisplay({
   code,
   discountPercent,
   originalAmount,
+  discountAmount,
   className = "",
 }: PromoCodeDisplayProps) {
-  const discount = calculatePromoDiscount(originalAmount, discountPercent);
-  const finalAmount = originalAmount - discount;
+  const finalAmount = originalAmount - discountAmount;
 
   return (
     <div className={`flex flex-col gap-1 ${className}`}>

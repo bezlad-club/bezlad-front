@@ -18,6 +18,7 @@ export interface PromoCode {
   validFrom?: string;
   validUntil?: string;
   activeReservationsCount: number;
+  applicableServices?: string[];
 }
 
 export class PromoCodeError extends Error {
@@ -66,11 +67,16 @@ export const promoCodeService = {
       throw new PromoCodeError("Промокод тимчасово зарезервований або використаний", "TEMPORARILY_UNAVAILABLE");
     }
 
+    if (!promo.applicableServices || promo.applicableServices.length === 0) {
+      throw new PromoCodeError("Промокод не застосовується до жодної послуги", "NO_SERVICES");
+    }
+
     return {
       isValid: true,
       discountPercent: promo.discountPercent,
       code: promo.code,
-      _id: promo._id
+      _id: promo._id,
+      applicableServices: promo.applicableServices,
     };
   },
 

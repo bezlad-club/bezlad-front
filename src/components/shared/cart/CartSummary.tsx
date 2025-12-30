@@ -2,6 +2,7 @@ import { CartItem } from "@/types/cart";
 import { AppliedPromo } from "@/types/promoCode";
 import CartSummaryItem from "./CartSummaryItem";
 import PromoCodeDisplay from "../promoCode/PromoCodeDisplay";
+import { calculatePromoDiscount } from "@/utils/promoCodeUtils";
 
 interface CartSummaryProps {
   items: CartItem[];
@@ -17,6 +18,10 @@ export default function CartSummary({
   className = "",
 }: CartSummaryProps) {
   if (items.length === 0) return null;
+
+  const discount = appliedPromo
+    ? calculatePromoDiscount(items, appliedPromo)
+    : 0;
 
   return (
     <div className={`p-4 rounded-[12px] bg-purple-ultra-light ${className}`}>
@@ -38,6 +43,7 @@ export default function CartSummary({
             code={appliedPromo.code}
             discountPercent={appliedPromo.discountPercent}
             originalAmount={totalAmount}
+            discountAmount={discount}
           />
         ) : (
           <div className="flex justify-between items-center">
