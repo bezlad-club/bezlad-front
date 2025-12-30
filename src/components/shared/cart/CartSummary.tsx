@@ -52,20 +52,19 @@ export default function CartSummary({
         ))}
       </ul>
       <div className="pt-3 border-t border-purple-light">
-        {appliedPromo ? (
-          <PromoCodeDisplay
-            code={appliedPromo.code}
-            discountPercent={appliedPromo.discountPercent}
-            originalAmount={totalAmount}
-            discountAmount={discount}
-            isPartial={isPartialPromo || false}
-          />
-        ) : (
-          <div className="flex justify-between items-center">
-            <p className="font-bold text-[16px]">Загалом:</p>
-            <p className="font-bold text-[20px]">{totalAmount} грн</p>
+        {appliedPromo && (
+          <div className="mb-2">
+            <PromoCodeDisplay
+              code={appliedPromo.code}
+              discountPercent={appliedPromo.discountPercent}
+              isPartial={isPartialPromo || false}
+            />
           </div>
         )}
+        <div className="flex justify-between items-center">
+          <p className="font-bold text-[16px]">Загалом:</p>
+          <p className="font-bold text-[20px]">{totalAmount - discount} грн</p>
+        </div>
       </div>
     </div>
   );

@@ -128,8 +128,6 @@ export default function CartModal({
                       <PromoCodeDisplay
                         code={appliedPromo.code}
                         discountPercent={appliedPromo.discountPercent}
-                        originalAmount={totalAmount}
-                        discountAmount={discount}
                         isPartial={isPartialPromo || false}
                       />
                     ) : (
