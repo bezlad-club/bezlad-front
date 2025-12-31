@@ -6,6 +6,5 @@ export interface Service {
   description?: string;
   price?: string;
   menuOrder?: number;
-  paymentUrl?: string;
   image?: SanityImage;
 }

@@ -19,7 +19,6 @@ export default function PriceListCard({
   title,
   price,
   description,
-  paymentUrl,
   image,
   onAddToCart,
   onOpenCart,
@@ -35,7 +34,7 @@ export default function PriceListCard({
       onOpenCart?.();
     } else {
       setIsAdding(true);
-      onAddToCart?.({ _id, title, price, description, paymentUrl, image });
+      onAddToCart?.({ _id, title, price, description, image });
       setTimeout(() => setIsAdding(false), BUTTON_ANIMATION_DURATION);
     }
   };
