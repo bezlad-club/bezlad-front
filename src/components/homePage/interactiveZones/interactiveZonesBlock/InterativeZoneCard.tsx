@@ -159,7 +159,7 @@ export const PurpleBlobCard = React.memo(
                         alt={title}
                         fill
                         loading="lazy"
-                        className="object-cover lg:hidden"
+                        className="object-cover rounded-full lg:hidden"
                     />
                     <Image
                         src="/images/interactiveZone/magnet_wall.webp"

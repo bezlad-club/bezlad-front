@@ -48,7 +48,7 @@ export const interactiveZonesData: InteractiveZoneItem[] = [
     {
         id: 4,
         title: "Лего стіна",
-        image: "/images/interactiveZone/lego_wall.webp",
+        image: "/images/interactiveZone/lego_wall3.webp",
         card: "black",
         direction: "left",
     },
