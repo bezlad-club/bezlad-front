@@ -35,7 +35,7 @@ export const interactiveZonesData: InteractiveZoneItem[] = [
     {
         id: 5,
         title: "Магнітна стіна",
-        image: "/images/interactiveZone/magnetWallMob.webp",
+        image: "/images/interactiveZone/magnet_wall.webp",
         card: "purpleBlob",
     },
     {
@@ -48,14 +48,14 @@ export const interactiveZonesData: InteractiveZoneItem[] = [
     {
         id: 4,
         title: "Лего стіна",
-        image: "/images/interactiveZone/legoWall.webp",
+        image: "/images/interactiveZone/lego_wall3.webp",
         card: "black",
         direction: "left",
     },
     {
         id: 9,
         title: "Зелена зона",
-        image: "/images/interactiveZone/greenZone.webp",
+        image: "/images/interactiveZone/green_zone.webp",
         card: "purpleNoise",
     },
     {
@@ -76,20 +76,20 @@ export const interactiveZonesData: InteractiveZoneItem[] = [
     {
         id: 10,
         title: "Стіна Pixel art",
-        image: "/images/interactiveZone/pixelArtWallMob.webp",
+        image: "/images/interactiveZone/pixelArtWall.webp",
         card: "yellowNoodle",
     },
     {
         id: 2,
         title: "Mала пісочниця",
-        image: "/images/interactiveZone/smallSandbox.webp",
+        image: "/images/interactiveZone/small_sandbox.webp",
         card: "gray",
         pictureSize: "small",
     },
     {
         id: 3,
         title: "Велика пісочниця",
-        image: "/images/interactiveZone/bigSandboxMob.webp",
+        image: "/images/interactiveZone/bigSandbox.webp",
         card: "yellowBlob",
     },
 ];

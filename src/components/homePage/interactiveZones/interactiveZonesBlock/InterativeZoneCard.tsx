@@ -159,14 +159,14 @@ export const PurpleBlobCard = React.memo(
                         alt={title}
                         fill
                         loading="lazy"
-                        className="object-cover lg:hidden"
+                        className="object-cover rounded-full lg:hidden"
                     />
                     <Image
-                        src="/images/interactiveZone/magnetWall.webp"
+                        src="/images/interactiveZone/magnet_wall.webp"
                         alt="magnet wall"
                         fill
                         loading="lazy"
-                        className="object-cover hidden lg:block"
+                        className="object-cover rounded-full hidden lg:block"
                     />
                 </div>
                 <div className="w-[153.74px] h-[60.2px] md:hidden lg:block xl:block lg:w-[220px] xl:w-[309px] z-1 lg:h-[85px] xl:h-[121px] text-purple absolute top-[70px] left-[5px] lg:top-[280px] xl:top-[322px] lg:left-[-12px] pointer-events-none">
@@ -451,7 +451,7 @@ export const PixelArtCard = React.memo(
                         className="object-cover rounded-full"
                     />
                     <Image
-                        src="/images/interactiveZone/pixelArtWallDesk.webp"
+                        src="/images/interactiveZone/pixelArtWall.webp"
                         alt="pixel art wall"
                         fill
                         loading="lazy"
@@ -563,7 +563,7 @@ export const YellowBlobCard = React.memo(
                         className="object-cover rounded-full object-top lg:hidden"
                     />
                     <Image
-                        src="/images/interactiveZone/bigSandboxDesk.webp"
+                        src="/images/interactiveZone/bigSandbox.webp"
                         alt={title}
                         fill
                         loading="lazy"

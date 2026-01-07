@@ -47,7 +47,7 @@ export default function SpecialCard() {
           </li>
           <li className="flex items-center gap-3.5 text-white h-[74px] sm:h-[91px] bg-gray-dark rounded-[12px] tracking-[-0.02em] px-3 lg:px-4">
             <span className="w-3.5 h-3.5 bg-white rounded-full shrink-0" />
-            Вигідні умови для святкування Днів Народження
+            Святкування днів народження
           </li>
         </ul>
       </div>

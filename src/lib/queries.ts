@@ -7,7 +7,6 @@ export const ALL_SERVICES_QUERY = defineQuery(`*[_type == "service"]
     description,
     price,
     menuOrder,
-    paymentUrl,
     image{
       crop,
       hotspot,

@@ -36,7 +36,7 @@ export default function AdvantagesList() {
           className="relative w-full h-full rounded-full overflow-hidden"
         >
           <Image
-            src="/images/advantages/library.webp"
+            src="/images/advantages/library2.webp"
             alt="library"
             fill
             className="object-cover absolute inset-0"
@@ -88,7 +88,7 @@ export default function AdvantagesList() {
           className="relative w-full h-full rounded-full overflow-hidden z-2"
         >
           <Image
-            src="/images/advantages/surveillance.webp"
+            src="/images/advantages/surveillance2.webp"
             alt="surveillance"
             fill
             className="object-cover absolute inset-0"
@@ -141,7 +141,7 @@ export default function AdvantagesList() {
           className="relative w-full h-full rounded-full overflow-hidden"
         >
           <Image
-            src="/images/advantages/cafe.webp"
+            src="/images/advantages/cafe2.webp"
             alt="cafe"
             fill
             className="object-cover absolute inset-0"

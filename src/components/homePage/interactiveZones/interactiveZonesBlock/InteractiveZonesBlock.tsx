@@ -27,14 +27,21 @@ function InteractiveZonesBlock() {
               ? "tablet"
               : "mobile";
 
-    const slides = useMemo(
-        () =>
-            getSlides(
-                breakpoint,
-                interactiveZonesData.sort((a, b) => a.id - b.id)
-            ),
-        [breakpoint]
-    );
+    const slides = useMemo(() => {
+        const sortedData = [...interactiveZonesData].sort((a, b) => a.id - b.id);
+        
+        // For mobile devices, swap elements with id 5 and 6
+        if (breakpoint === "mobile") {
+            const index5 = sortedData.findIndex(item => item.id === 5);
+            const index6 = sortedData.findIndex(item => item.id === 6);
+            
+            if (index5 !== -1 && index6 !== -1) {
+                [sortedData[index5], sortedData[index6]] = [sortedData[index6], sortedData[index5]];
+            }
+        }
+        
+        return getSlides(breakpoint, sortedData);
+    }, [breakpoint]);
 
     const renderSlides = useMemo(() => {
         if (breakpoint === "desktop") {
