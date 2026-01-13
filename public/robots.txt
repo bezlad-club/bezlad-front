@@ -1,0 +1,13 @@
+# *
+User-agent: *
+Allow: /
+
+# *
+User-agent: *
+Disallow: /api/*
+
+# Host
+Host: https://bezlad.com
+
+# Sitemaps
+Sitemap: https://bezlad.com/sitemap.xml

@@ -6,15 +6,18 @@ import { Dispatch, SetStateAction, useState } from "react";
 import { useOrderFormValidation } from "@/schemas/orderFormValidation";
 
 import CustomizedInput from "../formComponents/CustomizedInput";
+import CustomizedCheckbox from "../formComponents/CustomizedCheckbox";
 import MainButton from "../buttons/MainButton";
 import { CartItem } from "@/types/cart";
 import { AppliedPromo } from "@/types/promoCode";
+import Link from "next/link";
 
 export interface ValuesOrderFormType {
   name: string;
   phone: string;
   email: string;
   message: string;
+  termsAccepted: boolean;
 }
 
 interface OrderFormProps {
@@ -42,14 +45,12 @@ export default function OrderForm({
     phone: "",
     email: "",
     message: "",
+    termsAccepted: false,
   };
 
   const validationSchema = useOrderFormValidation();
 
-  const submitForm = async (
-    values: ValuesOrderFormType,
-  ) => {
-
+  const submitForm = async (values: ValuesOrderFormType) => {
     try {
       setIsError(false);
       setIsLoading(true);
@@ -114,7 +115,7 @@ export default function OrderForm({
       onSubmit={submitForm}
       validationSchema={validationSchema}
     >
-      {({ dirty, isValid }) => (
+      {({ dirty, isValid, values }) => (
         <Form className={`${className}`}>
           <div className="flex flex-col w-full gap-y-3 lg:gap-y-3.5 mb-4 lg:mb-[26px]">
             <CustomizedInput fieldName="name" label="Імʼя" />
@@ -135,9 +136,26 @@ export default function OrderForm({
               fieldClassName="h-[83px] lg:h-[110px]"
             />
           </div>
+          <CustomizedCheckbox
+            fieldName="termsAccepted"
+            label={
+              <>
+                Підтверджую, що ознайомився/ознайомилась та погоджуюся з умовами{" "}
+                <Link
+                  href="/public-offer"
+                  target="_blank"
+                  className="text-purple underline hover:text-purple/80 transition-colors"
+                >
+                  договору оферти
+                </Link>
+                .
+              </>
+            }
+            className="mb-4 lg:mb-[26px]"
+          />
           <MainButton
             type="submit"
-            disabled={!(dirty && isValid) || isLoading}
+            disabled={!(dirty && isValid && values.termsAccepted) || isLoading}
             isLoading={isLoading}
             loadingText="Надсилання..."
             className="h-14 px-5 lg:px-5 text-[14px] lg:text-[16px]"
