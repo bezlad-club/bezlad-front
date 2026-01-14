@@ -26,6 +26,11 @@ export const useOrderFormValidation = () => {
       .string()
       .min(2, "Повинно містити від 2 до 400 символів")
       .max(400, "Повинно містити від 2 до 400 символів"),
+
+    termsAccepted: yup
+      .boolean()
+      .oneOf([true], "Необхідно погодитись з умовами договору оферти")
+      .required("Необхідно погодитись з умовами договору оферти"),
   });
 
   return orderFormValidationSchema;
