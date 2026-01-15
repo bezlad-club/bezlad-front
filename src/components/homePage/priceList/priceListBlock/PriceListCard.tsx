@@ -56,16 +56,6 @@ export default function PriceListCard({
 
       <div className="absolute z-10 inset-0 shadow-[inset_0px_4px_12.6px_rgba(255,255,255,0.25)] pointer-events-none" />
       <div className="relative z-10 overflow-hidden w-full h-full py-6 px-5 rounded-[15px] md:flex md:flex-col md:justify-between">
-        {/* <div className="w-50 h-50 absolute top-[-52px] right-[-13px] lg:right-[-42px] rounded-full overflow-hidden">
-          <Image
-            src={imageUrl}
-            alt={title}
-            width={200}
-            height={200}
-            className="w-full h-full object-cover"
-          />
-        </div> */}
-        {/* TODO: Remove this after testing and add it to the imageUrl in Sanity */}
         {imageUrl && (
           <div className="w-50 h-50 absolute top-[-52px] right-[-13px] lg:right-[-42px] rounded-full overflow-hidden">
             <Image

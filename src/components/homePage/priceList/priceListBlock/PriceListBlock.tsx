@@ -35,15 +35,6 @@ function PriceListBlock({ services }: { services: Service[] }) {
 
   const sectionRef = useRef<HTMLDivElement | null>(null);
 
-  // TODO: Remove this after testing and add it to the services array in Sanity
-  const newService: Service = {
-    title: "Додатковий супроводжувач",
-    price: "350",
-    description: "Додатковий супроводжувач для вашої дитини",
-  };
-
-  const allServices = [...services, newService];
-
   const handleOpenCart = () => {
     setIsCartModalShown(true);
   };
@@ -72,7 +63,7 @@ function PriceListBlock({ services }: { services: Service[] }) {
         >
           <AnimatedArrow className="md:hidden text-white absolute w-[195px] h-auto scale-y-[-1] left-1/2 translate-x-[57px] rotate-[-8deg] top-[-73px]" />
           <ul className="flex flex-col flex-wrap items-center gap-5 w-full">
-            {allServices.map((service, index) => (
+            {services.map((service, index) => (
               <motion.li
                 initial="hidden"
                 whileInView="visible"
@@ -143,7 +134,7 @@ function PriceListBlock({ services }: { services: Service[] }) {
             spaceBetween={20}
             navigation={true}
           >
-            {allServices.map((service, index) => (
+            {services.map((service, index) => (
               <SwiperSlide key={index}>
                 <PriceListCard
                   {...service}
