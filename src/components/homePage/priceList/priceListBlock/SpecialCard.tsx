@@ -11,7 +11,7 @@ export default function SpecialCard() {
       exit="exit"
       viewport={{ once: true, amount: 0.1 }}
       variants={fadeInAnimation({ y: 20, delay: 0.6 })}
-      className="relative w-full sm:w-[285px] h-full flex flex-col items-center justify-center shrink-0 mx-auto md:mx-0"
+      className="relative w-full h-full flex flex-col items-center justify-center shrink-0 mx-auto"
     >
       <div className="relative z-2 w-full h-full bg-white rounded-[15px] px-5 pb-5 pt-5.5 overflow-hidden">
         <h3 className="font-azbuka text-[20px] leading-[120%] uppercase flex flex-col mb-[19px]">

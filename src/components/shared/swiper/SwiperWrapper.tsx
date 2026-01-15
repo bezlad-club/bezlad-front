@@ -165,7 +165,7 @@ export const SwiperWrapper = dynamic(
                         className={clsx(
                             overflowVisible ? "overflow-visible!" : ""
                         )}
-                        wrapperClass={clsx(navigation ? "pb-20" : "")}
+                        wrapperClass={clsx(navigation ? "pb-20 xl:pb-4" : "")}
                         modules={[Keyboard, Navigation]}
                         keyboard={{
                             enabled: true,
