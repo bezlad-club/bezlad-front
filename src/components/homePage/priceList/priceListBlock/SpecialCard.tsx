@@ -41,14 +41,14 @@ export default function SpecialCard() {
               className="absolute inset-0 object-cover"
             />
           </li>
-          <li className="flex items-center gap-3.5 text-white h-[43px] lg:h-[70px] lg:flex-1 bg-purple-light rounded-[12px] tracking-[-0.02em] px-3 sm:px-4">
+          <li className="flex items-center gap-3.5 text-white h-[73px] lg:h-[70px] lg:flex-1 bg-purple-light rounded-[12px] tracking-[-0.02em] px-3 sm:px-4">
             <span className="w-3.5 h-3.5 bg-white rounded-full shrink-0" />
             Знижки для груп від 10 дітей
           </li>
-          <li className="flex items-center gap-3.5 text-white h-[74px] sm:h-[91px] lg:h-[70px] lg:flex-1 bg-gray-dark rounded-[12px] tracking-[-0.02em] px-3 lg:px-4">
+          {/* <li className="flex items-center gap-3.5 text-white h-[74px] sm:h-[91px] lg:h-[70px] lg:flex-1 bg-gray-dark rounded-[12px] tracking-[-0.02em] px-3 lg:px-4">
             <span className="w-3.5 h-3.5 bg-white rounded-full shrink-0" />
             Святкування днів народження
-          </li>
+          </li> */}
         </ul>
       </div>
       <div className="w-[78%] sm:w-[244px] h-[332px] bg-purple-light rounded-[15px] absolute bottom-[calc(100%/2-8px)] left-[calc(100%/2-4px)] -translate-x-1/2 translate-y-1/2 z-1 rotate-[10.77deg] md:left-0 md:bottom-[10px] md:translate-x-0 md:translate-y-0 md:origin-bottom-left" />
