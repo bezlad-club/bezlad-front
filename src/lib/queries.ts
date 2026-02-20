@@ -5,6 +5,7 @@ export const ALL_SERVICES_QUERY = defineQuery(`*[_type == "service"]
     _id,
     title,
     description,
+    second_description,
     price,
     menuOrder,
     image{
