@@ -19,6 +19,7 @@ export default function PriceListCard({
   title,
   price,
   description,
+  second_description,
   image,
   onAddToCart,
   onOpenCart,
@@ -39,7 +40,7 @@ export default function PriceListCard({
     }
   };
   return (
-    <div className="relative flex flex-col items-center justify-center w-full xl:w-[285px] md:h-[336px] rounded-[15px] bg-white/6 overflow-hidden backdrop-blur-[18px] webkit-backdrop-blur-[18px] p-0.5 will-change-transform will-change-backdrop-filter">
+    <div className="relative flex flex-col items-center justify-center w-full xl:w-[285px] md:h-[366px] rounded-[15px] bg-white/6 overflow-hidden backdrop-blur-[18px] webkit-backdrop-blur-[18px] p-0.5 will-change-transform will-change-backdrop-filter">
       {/* Gradient border layer */}
       <div
         className="absolute z-10 inset-0 rounded-[15px] pointer-events-none"
@@ -76,10 +77,18 @@ export default function PriceListCard({
           {price}
           <span className="text-[14px] font-azbuka leading-[120%]">грн</span>
         </p>
-        <p className="text-[14px] leading-[120%] text-white flex items-center gap-3.5 mb-7.5">
-          <span className="w-3.5 h-3.5 bg-white rounded-full shrink-0" />
-          {description}
-        </p>
+        <div className="flex flex-col gap-2 mb-7.5">
+          <p className="text-[14px] leading-[120%] text-white flex items-center gap-3.5">
+            <span className="w-3.5 h-3.5 bg-white rounded-full shrink-0" />
+            {description}
+          </p>
+          {second_description && (
+            <p className="text-[14px] leading-[120%] text-white flex items-center gap-3.5">
+              <span className="w-3.5 h-3.5 bg-white rounded-full shrink-0" />
+              {second_description}
+            </p>
+          )}
+        </div>
 
         <MainButton
           className={`w-full h-[52px] text-[14px] leading-[120%] transition-all duration-300 ${
