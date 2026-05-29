@@ -28,23 +28,28 @@ export default function PriceList({ services }: { services: Service[] }) {
       <PriceListImages />
       <Container className="relative">
         <div className="lg:flex lg:flex-row-reverse lg:items-center lg:justify-between mb-19 lg:mb-[81px]">
-          <SectionTitle className="text-white flex items-center gap-4 mb-6 lg:gap-7 lg:mb-0">
-            <motion.span
-              initial="hidden"
-              whileInView="visible"
-              exit="exit"
-              viewport={{ once: true, amount: 0.8 }}
-              variants={fadeInAnimation({
-                x: 20,
-                delay: 0.2,
-                scale: 0.9,
-              })}
-              className="w-[47px] h-[47px] flex items-center justify-center"
-            >
-              <StarIcon className="w-[37px] h-[37px]" />
-            </motion.span>
-            Ціни
-          </SectionTitle>
+          <div className="mb-6 lg:mb-0 ml-auto flex flex-col items-end text-right lg:max-w-[270px]">
+            <SectionTitle className="text-white flex w-full items-center justify-end gap-4 lg:gap-7">
+              <motion.span
+                initial="hidden"
+                whileInView="visible"
+                exit="exit"
+                viewport={{ once: true, amount: 0.8 }}
+                variants={fadeInAnimation({
+                  x: 20,
+                  delay: 0.2,
+                  scale: 0.9,
+                })}
+                className="w-[47px] h-[47px] flex items-center justify-center"
+              >
+                <StarIcon className="w-[37px] h-[37px]" />
+              </motion.span>
+              Ціни
+            </SectionTitle>
+            <p className="mt-2.5 text-right text-sm leading-[135%] text-white/90 lg:text-base">
+              Ціни вказані за вхід до простору, час перебування необмежений.
+            </p>
+          </div>
           <motion.p
             initial="hidden"
             whileInView="visible"
