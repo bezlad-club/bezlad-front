@@ -23,7 +23,7 @@ const raleway = Raleway({
 const azbuka = localFont({
   src: [
     {
-      path: "../../public/fonts/azbuka04.woff2",
+      path: "../../../public/fonts/azbuka04.woff2",
       weight: "400",
       style: "normal",
     },
