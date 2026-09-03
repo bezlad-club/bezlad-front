@@ -73,10 +73,7 @@ export default function OrderForm({
         });
 
         const paymentResponse = await axios.post("/api/way-for-pay/purchase", {
-          cartItems: cartItems.map((item) => ({
-            _id: item._id,
-            quantity: item.quantity,
-          })),
+          cartItems,
           clientInfo: {
             name: values.name,
             phone: values.phone,

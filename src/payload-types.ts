@@ -181,7 +181,6 @@ export interface Service {
   image?: (number | null) | Media;
   price: number;
   menuOrder: number;
-  paymentUrl: string;
   updatedAt: string;
   createdAt: string;
 }
@@ -384,7 +383,6 @@ export interface ServiceSelect<T extends boolean = true> {
   image?: T;
   price?: T;
   menuOrder?: T;
-  paymentUrl?: T;
   updatedAt?: T;
   createdAt?: T;
 }

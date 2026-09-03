@@ -51,5 +51,5 @@ const sitemapConfig = {
   },
 };
 
-// Експортуємо конфігурацію (CommonJS синтаксис)
-module.exports = sitemapConfig;
+// Експортуємо конфігурацію (ESM синтаксис)
+export default sitemapConfig;

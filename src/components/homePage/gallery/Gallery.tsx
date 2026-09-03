@@ -4,13 +4,13 @@ import { motion } from "motion/react";
 import { fadeInAnimation } from "@/utils/animationVariants";
 import Container from "@/components/shared/container/Container";
 import SectionTitle from "@/components/shared/titles/SectionTitle";
-import { GalleryImages } from "@/types/gallery";
 import Image from "next/image";
-import { urlForSanityImage } from "@/utils/getUrlForSanityImage";
+import { getImageUrl } from "@/utils/getImageUrl";
 import AnimatedArrow from "@/components/shared/animatedArrow/AnimatedArrow";
+import type { Gallery as GalleryDoc } from "@/payload-types";
 
 interface GalleryProps {
-  gallery: GalleryImages;
+  gallery: GalleryDoc | null;
 }
 
 export default function Gallery({ gallery }: GalleryProps) {
@@ -58,7 +58,7 @@ export default function Gallery({ gallery }: GalleryProps) {
             className="hidden lg:block relative w-[360px] xl:w-[590px] h-[154px] rounded-[16px]"
           >
             <Image
-              src={urlForSanityImage(photo1).fit("crop").url()}
+              src={getImageUrl(photo1)}
               alt="photo1"
               fill
               className="object-cover rounded-[16px]"
@@ -85,7 +85,7 @@ export default function Gallery({ gallery }: GalleryProps) {
             className="relative w-full md:w-[calc(42%-13.33px)] h-[275px] md:h-[451px] rounded-[10px] md:rounded-[16px] overflow-hidden shrink-0"
           >
             <Image
-              src={urlForSanityImage(photo2).fit("crop").url()}
+              src={getImageUrl(photo2)}
               alt="photo1"
               fill
               className="object-cover"
@@ -107,7 +107,7 @@ export default function Gallery({ gallery }: GalleryProps) {
           >
             <div className="relative w-[calc(50%-7px)] md:w-full h-full md:h-[calc(50%-10px)] rounded-[8px] md:rounded-[16px] overflow-hidden">
               <Image
-                src={urlForSanityImage(photo3).fit("crop").url()}
+                src={getImageUrl(photo3)}
                 alt="photo1"
                 fill
                 className="object-cover"
@@ -116,7 +116,7 @@ export default function Gallery({ gallery }: GalleryProps) {
             </div>
             <div className="relative w-[calc(50%-7px)] md:w-full h-full md:h-[calc(50%-10px)] rounded-[8px] md:rounded-[16px] overflow-hidden">
               <Image
-                src={urlForSanityImage(photo4).fit("crop").url()}
+                src={getImageUrl(photo4)}
                 alt="photo1"
                 fill
                 className="object-cover"
@@ -139,7 +139,7 @@ export default function Gallery({ gallery }: GalleryProps) {
           >
             <div className="md:hidden relative w-full h-[154px] rounded-[16px]">
               <Image
-                src={urlForSanityImage(photo1).fit("crop").url()}
+                src={getImageUrl(photo1)}
                 alt="photo1"
                 fill
                 className="object-cover rounded-[16px]"
@@ -148,7 +148,7 @@ export default function Gallery({ gallery }: GalleryProps) {
             </div>
             <div className="hidden md:block relative w-full md:h-[318px] lg:h-[334px] rounded-[16px]">
               <Image
-                src={urlForSanityImage(photo5).fit("crop").url()}
+                src={getImageUrl(photo5)}
                 alt="photo1"
                 fill
                 className="object-cover rounded-[16px]"

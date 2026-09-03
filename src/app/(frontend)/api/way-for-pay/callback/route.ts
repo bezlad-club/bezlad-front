@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import axios from "axios";
-import { client } from "@/lib/sanityServerClient";
+import { getPayloadClient } from "@/lib/payload";
 import { promoCodeService } from "@/lib/promoCodeService";
-import { RESERVATION_FOR_CALLBACK_QUERY } from "@/lib/queries";
 
 const MERCHANT_SECRET_KEY = process.env.MERCHANT_SECRET_KEY;
 
@@ -51,9 +50,15 @@ export async function POST(req: NextRequest) {
     let orderStatus = "";
 
     // Find reservation linked to this order
-    const reservation = await client.fetch(RESERVATION_FOR_CALLBACK_QUERY, {
-      ref: orderReference,
+    const payload = await getPayloadClient();
+    const reservationResult = await payload.find({
+      collection: "promoCodeReservation",
+      where: { orderReference: { equals: orderReference } },
+      limit: 1,
+      depth: 0,
     });
+
+    const reservation = reservationResult.docs[0];
 
     if (transactionStatus === "Approved") {
       statusMessage = `✅ Платіж успішний: Замовлення #${orderReference} оплачено на суму ${amount} грн.`;
@@ -76,10 +81,10 @@ export async function POST(req: NextRequest) {
       // Confirm promo code usage
       if (reservation) {
         try {
-          await promoCodeService.confirm(reservation._id, orderReference);
+          await promoCodeService.confirm(reservation.id, orderReference);
         } catch (err) {
           console.error(
-            `Failed to confirm promo code for reservation ${reservation._id}:`,
+            `Failed to confirm promo code for reservation ${reservation.id}:`,
             err
           );
         }
@@ -90,10 +95,10 @@ export async function POST(req: NextRequest) {
       // Cancel promo code reservation if declined
       if (reservation && reservation.status === "reserved") {
         try {
-          await promoCodeService.cancel(reservation._id);
+          await promoCodeService.cancel(reservation.id);
         } catch (err) {
           console.error(
-            `Failed to cancel promo code for reservation ${reservation._id}:`,
+            `Failed to cancel promo code for reservation ${reservation.id}:`,
             err
           );
         }

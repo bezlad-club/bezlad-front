@@ -47,11 +47,5 @@ export const Service: CollectionConfig = {
       required: true,
       min: 0,
     },
-    {
-      name: 'paymentUrl',
-      label: 'Посилання на оплату',
-      type: 'text',
-      required: true,
-    },
   ],
 }

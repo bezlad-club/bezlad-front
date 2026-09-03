@@ -1,25 +1,4 @@
-import { client } from "./sanityServerClient";
-
-import {
-  PROMO_CODE_VALIDATION_QUERY,
-  RESERVATION_BY_ID_QUERY,
-  PROMO_CODE_BY_ID_TYPE_ONLY_QUERY,
-  EXPIRED_RESERVATIONS_QUERY
-} from "./queries";
-
-export interface PromoCode {
-  _id: string;
-  code: string;
-  discountPercent: number;
-  type: 'reusable' | 'personal';
-  usageLimit?: number;
-  usageCount: number;
-  isActive?: boolean;
-  validFrom?: string;
-  validUntil?: string;
-  activeReservationsCount: number;
-  applicableServices?: string[];
-}
+import { getPayloadClient } from "./payload";
 
 export class PromoCodeError extends Error {
   constructor(message: string, public code: string) {
@@ -30,11 +9,42 @@ export class PromoCodeError extends Error {
 
 export const promoCodeService = {
   async validate(code: string) {
-    const promo = await client.fetch<PromoCode>(PROMO_CODE_VALIDATION_QUERY, { code });
+    const payload = await getPayloadClient();
+
+    const { docs } = await payload.find({
+      collection: 'promoCode',
+      where: {
+        code: {
+          equals: code,
+        },
+      },
+      limit: 1,
+      depth: 0,
+    });
+
+    const promo = docs[0];
 
     if (!promo) {
       throw new PromoCodeError("Промокод не знайдено", "NOT_FOUND");
     }
+
+    // Count 'reserved' reservations whose validUntil is in the future
+    const { totalDocs: activeReservationsCount } = await payload.count({
+      collection: 'promoCodeReservation',
+      where: {
+        and: [
+          { promoCode: { equals: promo.id } },
+          { status: { equals: 'reserved' } },
+          { validUntil: { greater_than: new Date() } },
+        ],
+      },
+    });
+
+    const usageCount = promo.usageCount ?? 0;
+    const usageLimit = promo.usageLimit ?? undefined;
+    const applicableServices = (promo.applicableServices ?? []).map((s) =>
+      typeof s === "number" ? s : s.id
+    );
 
     // Basic checks
     const now = new Date();
@@ -51,23 +61,22 @@ export const promoCodeService = {
       throw new PromoCodeError("Термін дії промокоду закінчився", "EXPIRED");
     }
 
-    if (promo.usageLimit && promo.usageCount >= promo.usageLimit) {
+    if (usageLimit && usageCount >= usageLimit) {
       throw new PromoCodeError("Ліміт використання вичерпано", "LIMIT_REACHED");
     }
 
     // Check active reservations
     // We count 'reserved' status where validUntil is in the future
-    const activeReservationsCount = promo.activeReservationsCount || 0;
 
     // If it's a personal code (limit 1 implicitly or explicitly) or has a limit
     // We check if (current_usage + reserved) >= limit
-    const limit = promo.usageLimit || (promo.type === 'personal' ? 1 : Infinity);
-    
-    if (promo.usageCount + activeReservationsCount >= limit) {
+    const limit = usageLimit || (promo.type === 'personal' ? 1 : Infinity);
+
+    if (usageCount + activeReservationsCount >= limit) {
       throw new PromoCodeError("Промокод тимчасово зарезервований або використаний", "TEMPORARILY_UNAVAILABLE");
     }
 
-    if (!promo.applicableServices || promo.applicableServices.length === 0) {
+    if (applicableServices.length === 0) {
       throw new PromoCodeError("Промокод не застосовується до жодної послуги", "NO_SERVICES");
     }
 
@@ -75,39 +84,52 @@ export const promoCodeService = {
       isValid: true,
       discountPercent: promo.discountPercent,
       code: promo.code,
-      _id: promo._id,
-      applicableServices: promo.applicableServices,
+      id: promo.id,
+      applicableServices,
     };
   },
 
   async reserve(code: string) {
+    const payload = await getPayloadClient();
+
     // 1. Validate again to prevent race conditions (mostly)
     const validResult = await this.validate(code);
-    
+
     // 2. Create reservation
     const validMinutes = 30;
     const validUntil = new Date(Date.now() + validMinutes * 60 * 1000).toISOString();
 
-    const reservation = await client.create({
-      _type: 'promoCodeReservation',
-      promoCode: { _ref: validResult._id, _type: 'reference' },
-      status: 'reserved',
-      reservedAt: new Date().toISOString(),
-      validUntil,
+    const reservation = await payload.create({
+      collection: 'promoCodeReservation',
+      data: {
+        promoCode: validResult.id,
+        status: 'reserved',
+        reservedAt: new Date().toISOString(),
+        validUntil,
+      },
     });
 
     return {
-      reservationId: reservation._id,
+      reservationId: reservation.id,
       validUntil,
       discountPercent: validResult.discountPercent
     };
   },
 
-  async confirm(reservationId: string, orderReference: string) {
-    const reservation = await client.fetch(
-      RESERVATION_BY_ID_QUERY,
-      { id: reservationId }
-    );
+  async confirm(reservationId: number, orderReference: string) {
+    const payload = await getPayloadClient();
+
+    let reservation = null;
+
+    try {
+      reservation = await payload.findByID({
+        collection: 'promoCodeReservation',
+        id: reservationId,
+        depth: 0,
+      });
+    } catch {
+      reservation = null;
+    }
 
     if (!reservation) {
       throw new Error("Reservation not found");
@@ -117,48 +139,98 @@ export const promoCodeService = {
       return; // Already confirmed
     }
 
-    // Transaction to update reservation and increment usage count
-    const transaction = client.transaction();
+    const promoRef =
+      typeof reservation.promoCode === 'object'
+        ? reservation.promoCode.id
+        : reservation.promoCode;
 
-    transaction.patch(reservationId, (p) => 
-      p.set({ 
-        status: 'confirmed', 
+    await payload.update({
+      collection: 'promoCodeReservation',
+      id: reservation.id,
+      data: {
+        status: 'confirmed',
         orderReference // Link if not linked yet
-      })
-    );
+      },
+    });
 
-    transaction.patch(reservation.promoCode._ref, (p) => 
-      p.inc({ usageCount: 1 })
-    );
+    const promo = await payload.findByID({
+      collection: 'promoCode',
+      id: promoRef,
+      depth: 0,
+    });
+
+    const promoUpdate: Record<string, unknown> = {
+      usageCount: { $inc: 1 },
+    };
 
     // Check if we need to deactivate personal code
-    const promo = await client.fetch(PROMO_CODE_BY_ID_TYPE_ONLY_QUERY, { id: reservation.promoCode._ref });
     if (promo.type === 'personal') {
-       transaction.patch(reservation.promoCode._ref, (p) => p.set({ isActive: false }));
+      promoUpdate.isActive = false;
     }
 
-    await transaction.commit();
+    await payload.db.updateOne({
+      collection: 'promoCode',
+      id: promoRef,
+      data: promoUpdate,
+    });
   },
 
-  async cancel(reservationId: string) {
-     return client.patch(reservationId).set({ status: 'cancelled' }).commit();
+  async cancel(reservationId: number) {
+    const payload = await getPayloadClient();
+
+    let reservation = null;
+
+    try {
+      reservation = await payload.findByID({
+        collection: 'promoCodeReservation',
+        id: reservationId,
+        depth: 0,
+      });
+    } catch {
+      reservation = null;
+    }
+
+    if (!reservation) {
+      return null;
+    }
+
+    return payload.update({
+      collection: 'promoCodeReservation',
+      id: reservation.id,
+      data: {
+        status: 'cancelled'
+      },
+    });
   },
 
   async cleanupExpired() {
     try {
-      const expiredReservations = await client.fetch(EXPIRED_RESERVATIONS_QUERY);
+      const payload = await getPayloadClient();
 
-      if (!expiredReservations || expiredReservations.length === 0) {
+      const now = new Date();
+
+      const expiredReservations = await payload.find({
+        collection: 'promoCodeReservation',
+        where: {
+          and: [
+            { status: { in: ['reserved', 'expired'] } },
+            { validUntil: { less_than: now } },
+          ],
+        },
+        limit: 10,
+        depth: 0,
+      });
+
+      if (!expiredReservations.docs || expiredReservations.docs.length === 0) {
         return;
       }
 
-      const transaction = client.transaction();
-
-      for (const res of expiredReservations) {
-        transaction.delete(res._id);
+      for (const res of expiredReservations.docs) {
+        await payload.delete({
+          collection: 'promoCodeReservation',
+          id: res.id,
+        });
       }
-
-      await transaction.commit();
     } catch (error) {
       console.error("Error cleaning up expired reservations:", error);
       // Fails silently to not disrupt the main flow

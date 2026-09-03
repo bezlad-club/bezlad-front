@@ -1,18 +1,17 @@
 "use client";
 import { CartItem as CartItemType } from "@/types/cart";
 import Image from "next/image";
-import { urlForSanityImage } from "@/utils/getUrlForSanityImage";
+import { getImageUrl } from "@/utils/getImageUrl";
 import IconButton from "../buttons/IconButton";
 import CrossIcon from "../icons/CrossIcon";
-import { getPriceValue } from "@/utils/getPriceValue";
 import QuantityControl from "./QuantityControl";
 
 import { AppliedPromo } from "@/types/promoCode";
 
 interface CartItemProps {
   item: CartItemType;
-  onUpdateQuantity: (id: string, quantity: number) => void;
-  onRemove: (id: string) => void;
+  onUpdateQuantity: (id: number, quantity: number) => void;
+  onRemove: (id: number) => void;
   appliedPromo?: AppliedPromo | null;
 }
 
@@ -22,13 +21,11 @@ export default function CartItem({
   onRemove,
   appliedPromo,
 }: CartItemProps) {
-  const imageUrl = item.image ? urlForSanityImage(item.image).url() : "";
-  const originalPrice = getPriceValue(item.price);
+  const imageUrl = item.image ? getImageUrl(item.image) : "";
+  const originalPrice = item.price;
 
   const isApplicable =
-    appliedPromo?.applicableServices &&
-    item._id &&
-    appliedPromo.applicableServices.includes(item._id);
+    appliedPromo?.applicableServices?.includes(item.id) ?? false;
 
   const pricePerItem =
     appliedPromo && isApplicable

@@ -1,27 +1,17 @@
 import { NextRequest, NextResponse, after } from "next/server";
 import crypto from "crypto";
 import axios from "axios";
-import { getPriceValue } from "@/utils/getPriceValue";
-import { client } from "@/lib/sanityServerClient";
+import { getPayloadClient } from "@/lib/payload";
 import { promoCodeService } from "@/lib/promoCodeService";
-import {
-  SERVICES_BY_IDS_QUERY,
-  RESERVATION_FOR_VALIDATION_QUERY,
-} from "@/lib/queries";
+import type { PromoCodeReservation } from "@/payload-types";
 
 const MERCHANT_ACCOUNT = process.env.MERCHANT_ACCOUNT;
 const MERCHANT_SECRET_KEY = process.env.MERCHANT_SECRET_KEY;
 const NEXT_PUBLIC_SITE_URL = process.env.NEXT_PUBLIC_SITE_URL;
 
 interface Item {
-  _id: string;
+  id: number;
   quantity: number;
-}
-
-interface SanityProduct {
-  _id: string;
-  title: string;
-  price: string;
 }
 
 export async function POST(req: NextRequest) {
@@ -36,15 +26,15 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const { cartItems, clientInfo, promo } = body;
-    let reservationId: string | undefined;
+    let reservationId: number | undefined;
 
     if (!cartItems || !Array.isArray(cartItems) || cartItems.length === 0) {
       return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
     }
 
     const productIds = cartItems
-      .filter((item: Item) => item._id)
-      .map((item: Item) => item._id);
+      .filter((item: Item) => item.id)
+      .map((item: Item) => item.id);
 
     if (productIds.length === 0) {
       return NextResponse.json(
@@ -67,13 +57,21 @@ export async function POST(req: NextRequest) {
 
     // 1. Validate Reservation if present
     let discountPercent = 0;
-    let applicableServices: string[] = [];
+    let applicableServices: number[] = [];
     let orderTimeout = 43200; // Default 12 hours if no promo code
+    const payload = await getPayloadClient();
 
     if (reservationId) {
-      const reservation = await client.fetch(RESERVATION_FOR_VALIDATION_QUERY, {
-        id: reservationId,
-      });
+      let reservation: PromoCodeReservation | null = null;
+      try {
+        reservation = await payload.findByID({
+          collection: "promoCodeReservation",
+          id: reservationId,
+          depth: 1,
+        });
+      } catch {
+        reservation = null;
+      }
 
       if (!reservation) {
         return NextResponse.json(
@@ -109,10 +107,15 @@ export async function POST(req: NextRequest) {
         );
       }
 
+      const reservationPromo = typeof reservation.promoCode === "object" ? reservation.promoCode : null;
+      const reservationApplicableServices = (reservationPromo?.applicableServices ?? []).map((s) => {
+        return typeof s === "number" ? s : s.id;
+      });
+
       // Check if promo applies to ANY item in the cart
-      const cartHasApplicableItems = reservation.promoCode.applicableServices?.some(
-        (serviceId: string) => productIds.includes(serviceId)
-      ) ?? false;
+      const cartHasApplicableItems = reservationApplicableServices.some(
+        (serviceId) => productIds.includes(serviceId)
+      );
 
       // If no items in cart match the promo's applicable services, we ignore the promo
       // but we do NOT throw error to let purchase proceed without discount
@@ -127,24 +130,23 @@ export async function POST(req: NextRequest) {
         orderTimeout = 43200;
       } else {
         discountPercent = Math.min(
-          Math.max(reservation.promoCode.discountPercent, 0),
+          Math.max(reservationPromo?.discountPercent ?? 0, 0),
           100
         );
-        applicableServices = reservation.promoCode.applicableServices;
+        applicableServices = reservationApplicableServices;
         orderTimeout = diffSeconds;
       }
     }
 
-    // Fetch actual prices from Sanity using only IDs
-    const sanityProducts = await client.fetch<SanityProduct[]>(
-      SERVICES_BY_IDS_QUERY,
-      {
-        ids: productIds,
-      }
-    );
+    // Fetch actual services from Payload using only IDs
+    const servicesResult = await payload.find({
+      collection: "service",
+      where: { id: { in: productIds } },
+      limit: 1000,
+      depth: 0,
+    });
 
-    const productsMap = new Map<string, SanityProduct>();
-    sanityProducts.forEach((p: SanityProduct) => productsMap.set(p._id, p));
+    const servicesMap = new Map(servicesResult.docs.map((s) => [s.id, s]));
 
     const merchantDomainName = NEXT_PUBLIC_SITE_URL.replace(/^https?:\/\//, "");
     const orderReference = `ORDER_${Date.now()}_${Math.random()
@@ -160,31 +162,31 @@ export async function POST(req: NextRequest) {
     let totalAmount = 0;
 
     for (const item of cartItems) {
-      const sanityProduct = productsMap.get(item._id);
+      const service = servicesMap.get(item.id);
 
-      if (!sanityProduct) {
-        console.error(`Product not found in Sanity: ${item._id}`);
+      if (!service) {
+        console.error(`Service not found in Payload: ${item.id}`);
         return NextResponse.json(
-          { error: `Product not found: ${item._id}` },
+          { error: `Service not found: ${item.id}` },
           { status: 400 }
         );
       }
 
-      let price = getPriceValue(sanityProduct.price);
+      let price = service.price;
 
       // Apply discount per item
       if (discountPercent > 0) {
         if (
           applicableServices &&
           applicableServices.length > 0 &&
-          applicableServices.includes(item._id)
+          applicableServices.includes(item.id)
         ) {
           price = price * (1 - discountPercent / 100);
         }
       }
 
-      // Ensure title matches Sanity and clean it
-      const name = sanityProduct.title.replace(/;/g, " ");
+      // Ensure title matches Payload and clean it
+      const name = service.title.replace(/;/g, " ");
 
       productNames.push(name);
       productCounts.push(item.quantity);
@@ -197,15 +199,16 @@ export async function POST(req: NextRequest) {
     const formattedAmount = totalAmount.toFixed(2);
     const formattedPrices = productPrices.map((p) => p.toFixed(2));
 
-    // Link Order to Reservation in Sanity
+    // Link Order to Reservation in Payload
     if (reservationId) {
-      await client
-        .patch(reservationId)
-        .set({
+      await payload.update({
+        collection: "promoCodeReservation",
+        id: reservationId,
+        data: {
           orderReference,
           finalAmount: Number(formattedAmount),
-        })
-        .commit();
+        },
+      });
     }
 
     // Lazy cleanup of expired reservations (limited to 10 to be fast)

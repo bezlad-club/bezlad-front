@@ -24,18 +24,14 @@ export default function CartSummary({
     : 0;
   
   const isPromoApplicable = appliedPromo
-    ? items.some((item) =>
-        appliedPromo.applicableServices?.includes(item._id || "")
-      )
+    ? items.some((item) => appliedPromo.applicableServices?.includes(item.id))
     : false;
 
   const isPartialPromo =
     isPromoApplicable &&
     appliedPromo &&
     appliedPromo.applicableServices &&
-    items.some(
-      (item) => !appliedPromo.applicableServices!.includes(item._id || "")
-    );
+    items.some((item) => !appliedPromo.applicableServices!.includes(item.id));
 
   return (
     <div className={`p-4 rounded-[12px] bg-purple-ultra-light ${className}`}>

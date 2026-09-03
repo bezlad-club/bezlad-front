@@ -8,7 +8,7 @@ import { motion } from "motion/react";
 import { fadeInAnimation } from "@/utils/animationVariants";
 import StarIcon from "@/components/shared/icons/StarIcon";
 import PriceListBlock from "./priceListBlock/PriceListBlock";
-import { Service } from "@/types/service";
+import type { Service } from "@/payload-types";
 
 export default function PriceList({ services }: { services: Service[] }) {
   if (!services || !Array.isArray(services) || services.length === 0) {

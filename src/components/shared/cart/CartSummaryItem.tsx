@@ -1,8 +1,7 @@
 import Image from "next/image";
 import { CartItem } from "@/types/cart";
 import { AppliedPromo } from "@/types/promoCode";
-import { urlForSanityImage } from "@/utils/getUrlForSanityImage";
-import { getPriceValue } from "@/utils/getPriceValue";
+import { getImageUrl } from "@/utils/getImageUrl";
 
 interface CartSummaryItemProps {
   item: CartItem;
@@ -13,13 +12,11 @@ export default function CartSummaryItem({
   item,
   appliedPromo,
 }: CartSummaryItemProps) {
-  const imageUrl = item.image ? urlForSanityImage(item.image).url() : "";
-  const originalPrice = getPriceValue(item.price);
+  const imageUrl = item.image ? getImageUrl(item.image) : "";
+  const originalPrice = item.price;
 
   const isApplicable =
-    appliedPromo?.applicableServices &&
-    item._id &&
-    appliedPromo.applicableServices.includes(item._id);
+    appliedPromo?.applicableServices?.includes(item.id) ?? false;
 
   const pricePerItem =
     appliedPromo && isApplicable

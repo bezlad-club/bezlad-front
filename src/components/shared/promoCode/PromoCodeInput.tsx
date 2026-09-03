@@ -26,7 +26,7 @@ export default function PromoCodeInput({
     useState<ValidationState>("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [discountPercent, setDiscountPercent] = useState<number>(0);
-  const [applicableServices, setApplicableServices] = useState<string[] | undefined>(undefined);
+  const [applicableServices, setApplicableServices] = useState<number[] | undefined>(undefined);
   const [isApplying, setIsApplying] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
 

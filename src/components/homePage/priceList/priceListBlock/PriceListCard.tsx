@@ -1,21 +1,22 @@
 "use client";
-import { Service } from "@/types/service";
+import type { Service } from "@/payload-types";
+import type { CartItem } from "@/types/cart";
 import MainButton from "@/components/shared/buttons/MainButton";
 import Image from "next/image";
 import { breakWords } from "@/utils/breakWords";
-import { urlForSanityImage } from "@/utils/getUrlForSanityImage";
+import { getImageUrl } from "@/utils/getImageUrl";
 import { useState } from "react";
 import { BUTTON_ANIMATION_DURATION } from "@/constants/constants";
 
 interface PriceListCardProps extends Service {
-  onAddToCart?: (service: Service) => void;
+  onAddToCart?: (service: Omit<CartItem, "quantity" | "addedAt">) => void;
   onOpenCart?: () => void;
   isInCart?: boolean;
   cartQuantity?: number;
 }
 
 export default function PriceListCard({
-  _id,
+  id,
   title,
   price,
   description,
@@ -27,7 +28,7 @@ export default function PriceListCard({
   cartQuantity = 0,
 }: PriceListCardProps) {
   const brokenTitle = breakWords(title);
-  const imageUrl = urlForSanityImage(image).url();
+  const imageUrl = getImageUrl(image);
   const [isAdding, setIsAdding] = useState(false);
 
   const handleClick = () => {
@@ -35,7 +36,7 @@ export default function PriceListCard({
       onOpenCart?.();
     } else {
       setIsAdding(true);
-      onAddToCart?.({ _id, title, price, description, image });
+      onAddToCart?.({ id, title, price, description, image });
       setTimeout(() => setIsAdding(false), BUTTON_ANIMATION_DURATION);
     }
   };

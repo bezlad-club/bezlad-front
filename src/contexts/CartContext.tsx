@@ -1,9 +1,7 @@
 "use client";
 import { createContext, ReactNode, useMemo, useCallback, useRef } from "react";
 import { Cart, CartContextType, CartItem } from "@/types/cart";
-import { Service } from "@/types/service";
 import useStorage from "@/hooks/useStorage";
-import { getPriceValue } from "@/utils/getPriceValue";
 import {
   CART_STORAGE_KEY,
   MIN_ITEMS_PER_SERVICE,
@@ -35,10 +33,10 @@ export function CartProvider({ children }: CartProviderProps) {
   const calculateTotals = (
     items: CartItem[]
   ): Pick<Cart, "totalAmount" | "totalItems"> => {
-    const totalAmount = items.reduce((sum, item) => {
-      const price = getPriceValue(item.price);
-      return sum + price * item.quantity;
-    }, 0);
+    const totalAmount = items.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
 
     const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
 
@@ -46,7 +44,7 @@ export function CartProvider({ children }: CartProviderProps) {
   };
 
   const addItem = useCallback(
-    (service: Service, quantity: number = 1) => {
+    (service: Omit<CartItem, "quantity" | "addedAt">, quantity: number = 1) => {
       if (isUpdatingRef.current) return;
 
       isUpdatingRef.current = true;
@@ -72,7 +70,6 @@ export function CartProvider({ children }: CartProviderProps) {
       } else {
         const newItem: CartItem = {
           ...service,
-          id: crypto.randomUUID(),
           quantity: Math.min(quantity, MAX_ITEMS_PER_SERVICE),
           addedAt: Date.now(),
         };
@@ -94,7 +91,7 @@ export function CartProvider({ children }: CartProviderProps) {
   );
 
   const removeItem = useCallback(
-    (id: string) => {
+    (id: number) => {
       setCart((prevCart) => {
         if (!prevCart) return INITIAL_CART;
 
@@ -111,7 +108,7 @@ export function CartProvider({ children }: CartProviderProps) {
   );
 
   const updateQuantity = useCallback(
-    (id: string, quantity: number) => {
+    (id: number, quantity: number) => {
       if (
         quantity < MIN_ITEMS_PER_SERVICE ||
         quantity > MAX_ITEMS_PER_SERVICE

@@ -1,6 +1,6 @@
 "use client";
 import PriceListCard from "./PriceListCard";
-import { Service } from "@/types/service";
+import type { Service } from "@/payload-types";
 import { SwiperWrapper } from "@/components/shared/swiper/SwiperWrapper";
 import { SwiperSlide } from "swiper/react";
 import { useScreenWidth } from "@/hooks/useScreenWidth";
