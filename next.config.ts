@@ -5,14 +5,8 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: "http",
-        hostname: "cdn.sanity.io",
-        pathname: "**",
-      },
-      {
         protocol: "https",
-        hostname: "cdn.sanity.io",
-        pathname: "**",
+        hostname: "*.public.blob.vercel-storage.com",
       },
     ],
     localPatterns: [
