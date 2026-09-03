@@ -475,8 +475,7 @@ export const PixelArtCard = React.memo(
 );
 PixelArtCard.displayName = "PixelArtCard";
 
-export const SinglePlaceholderCard = React.memo(
-    ({ title, image }: InterativeZonesCardProps) => {
+export const SinglePlaceholderCard = React.memo(() => {
         return (
             <div
                 className={clsx(
@@ -501,8 +500,7 @@ export const SinglePlaceholderCard = React.memo(
 );
 SinglePlaceholderCard.displayName = "SinglePlaceholderCard";
 
-export const DoublePlaceholderCard = React.memo(
-    ({ title, image }: InterativeZonesCardProps) => {
+export const DoublePlaceholderCard = React.memo(() => {
         return (
             <div
                 className={clsx(

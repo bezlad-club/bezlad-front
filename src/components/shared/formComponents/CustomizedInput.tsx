@@ -83,7 +83,7 @@ export default function CustomizedInput({
               );
             }
 
-            if ((as = "textarea")) {
+            if (as === "textarea") {
               return <textarea {...field} {...commonProps} autoComplete="on" />;
             }
 

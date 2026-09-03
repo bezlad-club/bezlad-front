@@ -1,6 +1,5 @@
 import { InteractiveZoneItem } from "../interactiveZonesData";
 import {
-    DESKTOP_CARDS_PER_SLIDE,
     MOBILE_CARDS_PER_SLIDE,
     TABLET_CARDS_PER_SLIDE,
 } from "./slidesLayouts";

@@ -92,10 +92,13 @@ export default function RootLayout({
           }}
         />
         <noscript>
+          {/* Raw <img> is required by the Meta Pixel noscript fallback; it must not be optimized. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             height="1"
             width="1"
             style={{ display: "none" }}
+            alt=""
             src="https://www.facebook.com/tr?id=1556056652139643&ev=PageView&noscript=1"
           />
         </noscript>

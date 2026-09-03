@@ -12,6 +12,14 @@ import MainButton from "../buttons/MainButton";
 
 type ValidationState = "idle" | "validating" | "valid" | "invalid";
 
+interface ValidationResult {
+  code: string;
+  status: "valid" | "invalid";
+  discountPercent?: number;
+  applicableServices?: number[];
+  errorMessage?: string;
+}
+
 interface PromoCodeInputProps {
   onApply: (promo: AppliedPromo) => void;
   appliedCode?: string;
@@ -22,24 +30,25 @@ export default function PromoCodeInput({
   appliedCode,
 }: PromoCodeInputProps) {
   const [code, setCode] = useState("");
-  const [validationState, setValidationState] =
-    useState<ValidationState>("idle");
-  const [errorMessage, setErrorMessage] = useState("");
-  const [discountPercent, setDiscountPercent] = useState<number>(0);
-  const [applicableServices, setApplicableServices] = useState<number[] | undefined>(undefined);
+  const [result, setResult] = useState<ValidationResult | null>(null);
   const [isApplying, setIsApplying] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Result of validating the current code, or null while it's still validating.
+  const currentResult = result?.code === code ? result : null;
+  const isIdle = !code || appliedCode;
+  const status = currentResult?.status ?? "validating";
+
+  const validationState: ValidationState = isIdle ? "idle" : status;
+  const errorMessage = currentResult?.errorMessage ?? "";
+  const discountPercent = currentResult?.discountPercent ?? 0;
+  const applicableServices = currentResult?.applicableServices;
 
   // Debounce validation
   useEffect(() => {
     if (!code || appliedCode) {
-      setValidationState("idle");
-      setErrorMessage("");
       return;
     }
-
-    setValidationState("validating");
-    setErrorMessage("");
 
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -50,17 +59,23 @@ export default function PromoCodeInput({
 
     const timer = setTimeout(async () => {
       try {
-        const result = await validatePromoCode(code, controller.signal);
+        const apiResult = await validatePromoCode(code, controller.signal);
 
         if (controller.signal.aborted) return;
 
-        if (result.isValid && result.discountPercent) {
-          setValidationState("valid");
-          setDiscountPercent(result.discountPercent);
-          setApplicableServices(result.applicableServices);
+        if (apiResult.isValid && apiResult.discountPercent) {
+          setResult({
+            code,
+            status: "valid",
+            discountPercent: apiResult.discountPercent,
+            applicableServices: apiResult.applicableServices,
+          });
         } else {
-          setValidationState("invalid");
-          setErrorMessage(PROMO_CODE_ERRORS.INVALID_CODE);
+          setResult({
+            code,
+            status: "invalid",
+            errorMessage: PROMO_CODE_ERRORS.INVALID_CODE,
+          });
         }
       } catch (error: unknown) {
         const err = error as { name?: string; code?: string };
@@ -80,6 +95,7 @@ export default function PromoCodeInput({
     const value = e.target.value.toUpperCase();
     if (value.length <= PROMO_CODE_INPUT_MAX_LENGTH) {
       setCode(value);
+      setResult(null);
     }
   };
 
@@ -87,6 +103,7 @@ export default function PromoCodeInput({
     if (validationState !== "valid") return;
 
     setIsApplying(true);
+    setResult(null);
     onApply({
       code: normalizePromoCode(code),
       discountPercent: discountPercent,
