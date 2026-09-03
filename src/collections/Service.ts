@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { revalidateHomepage } from './hooks/revalidateHomepage'
 
 export const Service: CollectionConfig = {
   slug: 'service',
@@ -8,6 +9,10 @@ export const Service: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'title',
+  },
+  hooks: {
+    afterChange: [revalidateHomepage],
+    afterDelete: [revalidateHomepage],
   },
   fields: [
     {

@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { revalidateHomepage } from './hooks/revalidateHomepage'
 
 export const Gallery: CollectionConfig = {
   slug: 'gallery',
@@ -8,6 +9,10 @@ export const Gallery: CollectionConfig = {
   },
   admin: {
     description: 'Секція «Атмосфера, яку хочеться відчути».',
+  },
+  hooks: {
+    afterChange: [revalidateHomepage],
+    afterDelete: [revalidateHomepage],
   },
   fields: [
     {
