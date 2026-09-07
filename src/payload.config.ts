@@ -39,7 +39,7 @@ export default buildConfig({
   collections: [Users, Media, Service, Gallery, PromoCode, PromoCodeReservation],
   db: postgresAdapter({
     pool: {
-      connectionString: process.env.DATABASE_URI || '',
+      connectionString: process.env.DATABASE_URL || '',
     },
   }),
   editor: lexicalEditor(),
