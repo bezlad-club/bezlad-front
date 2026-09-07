@@ -38,6 +38,9 @@ export default buildConfig({
   ],
   collections: [Users, Media, Service, Gallery, PromoCode, PromoCodeReservation],
   db: postgresAdapter({
+    // Auto-create the schema on an empty database during production builds.
+    // Default behavior otherwise
+    push: process.env.NEXT_PHASE === 'phase-production-build' ? true : undefined,
     pool: {
       connectionString: process.env.DATABASE_URL || '',
     },
