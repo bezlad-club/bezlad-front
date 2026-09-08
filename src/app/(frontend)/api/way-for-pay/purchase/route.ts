@@ -7,7 +7,7 @@ import type { PromoCodeReservation } from "@/payload-types";
 
 const MERCHANT_ACCOUNT = process.env.MERCHANT_ACCOUNT;
 const MERCHANT_SECRET_KEY = process.env.MERCHANT_SECRET_KEY;
-const NEXT_PUBLIC_SITE_URL = process.env.NEXT_PUBLIC_SITE_URL;
+const SITE_URL = process.env.NEXT_PUBLIC_VERCEL_URL;
 
 interface Item {
   id: number;
@@ -15,7 +15,7 @@ interface Item {
 }
 
 export async function POST(req: NextRequest) {
-  if (!MERCHANT_ACCOUNT || !MERCHANT_SECRET_KEY || !NEXT_PUBLIC_SITE_URL) {
+  if (!MERCHANT_ACCOUNT || !MERCHANT_SECRET_KEY || !SITE_URL) {
     console.error("Missing environment variables for WayForPay");
     return NextResponse.json(
       { error: "Server configuration error" },
@@ -148,7 +148,7 @@ export async function POST(req: NextRequest) {
 
     const servicesMap = new Map(servicesResult.docs.map((s) => [s.id, s]));
 
-    const merchantDomainName = NEXT_PUBLIC_SITE_URL.replace(/^https?:\/\//, "");
+    const merchantDomainName = SITE_URL;
     const orderReference = `ORDER_${Date.now()}_${Math.random()
       .toString(36)
       .substring(2, 9)
@@ -251,8 +251,8 @@ export async function POST(req: NextRequest) {
       clientEmail: clientInfo?.email,
       defaultPaymentSystem: "card",
       orderTimeout,
-      returnUrl: `${NEXT_PUBLIC_SITE_URL}/api/confirmation`,
-      serviceUrl: `${NEXT_PUBLIC_SITE_URL}/api/way-for-pay/callback`,
+      returnUrl: `https://${SITE_URL}/api/confirmation`,
+      serviceUrl: `https://${SITE_URL}/api/way-for-pay/callback`,
     };
 
     // Send request to WayForPay to get the payment URL

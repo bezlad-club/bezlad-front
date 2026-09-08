@@ -1,7 +1,6 @@
 /** @type {import('next-sitemap').IConfig} */
 
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL || "https://bezlad-frontend.vercel.app";
+const SITE_URL = `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
 
 const sitemapConfig = {
   siteUrl: SITE_URL,

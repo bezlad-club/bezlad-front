@@ -11,7 +11,7 @@ import schemaOrgData from "@/constants/schemaOrgData.json";
 import Script from "next/script";
 import { CartProvider } from "@/contexts/CartContext";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://bezlad.com";
+const SITE_URL = `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
 
 const raleway = Raleway({
   variable: "--font-raleway",

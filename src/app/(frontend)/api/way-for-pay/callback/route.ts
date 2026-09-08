@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
       try {
         await axios({
           method: "post",
-          url: `${process.env.NEXT_PUBLIC_SITE_URL}/api/telegram`,
+          url: `https://${process.env.NEXT_PUBLIC_VERCEL_URL}/api/telegram`,
           data: statusMessage,
           headers: {
             "Content-Type": "application/json",
