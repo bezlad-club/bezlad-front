@@ -1,9 +1,17 @@
 import type { Service } from "@/payload-types";
 
 export interface CartItem
-  extends Pick<Service, "id" | "title" | "price" | "description" | "image"> {
+  extends Pick<Service, "id" | "title" | "description" | "image"> {
+  price: number;
+  adultPrice?: number;
   quantity: number;
   addedAt: number;
+  slotId?: number;
+  date?: string;
+  startTime?: string;
+  endTime?: string;
+  childrenQty?: number;
+  adultsQty?: number;
 }
 
 export interface Cart {
@@ -18,9 +26,9 @@ export interface CartContextType {
     service: Omit<CartItem, "quantity" | "addedAt">,
     quantity?: number
   ) => void;
-  removeItem: (id: number) => void;
-  updateQuantity: (id: number, quantity: number) => void;
+  removeItem: (key: string) => void;
+  updateQuantity: (key: string, quantity: number) => void;
   clearCart: () => void;
-  isInCart: (serviceTitle: string) => boolean;
-  getItemQuantity: (serviceTitle: string) => number;
+  isInCart: (key: string) => boolean;
+  getItemQuantity: (key: string) => number;
 }

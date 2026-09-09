@@ -14,6 +14,8 @@ import { Media } from './collections/Media'
 import { PromoCode } from './collections/PromoCode'
 import { PromoCodeReservation } from './collections/PromoCodeReservation'
 import { Service } from './collections/Service'
+import { ServiceSlot } from './collections/ServiceSlot'
+import { SlotBooking } from './collections/SlotBooking'
 import { Users } from './collections/Users'
 
 const filename = fileURLToPath(import.meta.url)
@@ -36,7 +38,16 @@ export default buildConfig({
       },
     }),
   ],
-  collections: [Users, Media, Service, Gallery, PromoCode, PromoCodeReservation],
+  collections: [
+    Users,
+    Media,
+    Service,
+    ServiceSlot,
+    Gallery,
+    PromoCode,
+    PromoCodeReservation,
+    SlotBooking,
+  ],
   db: postgresAdapter({
     pool: {
       connectionString: process.env.DATABASE_URL || '',

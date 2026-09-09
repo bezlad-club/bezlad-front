@@ -10,6 +10,8 @@ import CustomizedCheckbox from "../formComponents/CustomizedCheckbox";
 import MainButton from "../buttons/MainButton";
 import { CartItem } from "@/types/cart";
 import { AppliedPromo } from "@/types/promoCode";
+import { isSlottedCartItem, getCartItemAmount, roundToCoins } from "@/utils/cartUtils";
+import { formatDateShortUk } from "@/utils/dateUtils";
 import Link from "next/link";
 
 export interface ValuesOrderFormType {
@@ -24,16 +26,31 @@ interface OrderFormProps {
   setIsError: Dispatch<SetStateAction<boolean>>;
   setIsNotificationShown: Dispatch<SetStateAction<boolean>>;
   setIsModalShown?: Dispatch<SetStateAction<boolean>>;
+  setErrorMessage?: (message: string | null) => void;
   className?: string;
   cartItems?: CartItem[];
   appliedPromo?: AppliedPromo | null;
   onClearCart?: () => void;
 }
 
+const getServerErrorMessage = (error: unknown): string | null => {
+  if (axios.isAxiosError(error)) {
+    const data: unknown = error.response?.data;
+    if (data && typeof data === "object" && "error" in data) {
+      const message = (data as { error?: unknown }).error;
+      if (typeof message === "string" && message.length > 0) {
+        return message;
+      }
+    }
+  }
+  return null;
+};
+
 export default function OrderForm({
   setIsError,
   setIsNotificationShown,
   setIsModalShown,
+  setErrorMessage,
   className = "",
   cartItems = [],
   appliedPromo,
@@ -53,15 +70,34 @@ export default function OrderForm({
   const submitForm = async (values: ValuesOrderFormType) => {
     try {
       setIsError(false);
+      setErrorMessage?.(null);
       setIsLoading(true);
 
       if (cartItems.length > 0) {
+        const slottedItems = cartItems.filter(isSlottedCartItem);
+
         const telegramData =
           `<b>Заявка "Форма бронювання відвідування"</b>\n` +
           `<b>Ім'я:</b> ${values.name.trim()}\n` +
           `<b>Телефон:</b> ${values.phone.trim().replace(/(?!^)\D/g, "")}\n` +
           `<b>Email:</b> ${values.email.trim()}\n` +
-          `<b>Побажання:</b> ${values.message.trim()}\n`;
+          `<b>Побажання:</b> ${values.message.trim()}\n` +
+          (slottedItems.length > 0
+            ? `<b>Квитки за слотами:</b>\n${slottedItems
+                .map(
+                  (item) =>
+                    `${item.title} — ${formatDateShortUk(
+                      item.date
+                    )} ${item.startTime} - ${
+                      item.endTime
+                    } — Діти: ${item.childrenQty ?? 0} × ${item.price} грн, Дорослі: ${
+                      item.adultsQty ?? 0
+                    } × ${item.adultPrice ?? 0} грн — Разом: ${roundToCoins(
+                      getCartItemAmount(item)
+                    )} грн`
+                )
+                .join("\n")}\n`
+            : "");
 
         await axios({
           method: "post",
@@ -72,15 +108,30 @@ export default function OrderForm({
           },
         });
 
-        const paymentResponse = await axios.post("/api/way-for-pay/purchase", {
-          cartItems,
-          clientInfo: {
-            name: values.name,
-            phone: values.phone,
-            email: values.email,
-          },
-          promo: appliedPromo?.code,
-        });
+        const purchaseItems = cartItems.map((item) =>
+          isSlottedCartItem(item)
+            ? {
+                id: item.id,
+                slotId: item.slotId,
+                date: item.date,
+                childrenQty: item.childrenQty ?? 0,
+                adultsQty: item.adultsQty ?? 0,
+              }
+            : { id: item.id, quantity: item.quantity }
+        );
+
+        const paymentResponse = await axios.post(
+          "/api/way-for-pay/purchase",
+          {
+            cartItems: purchaseItems,
+            clientInfo: {
+              name: values.name,
+              phone: values.phone,
+              email: values.email,
+            },
+            promo: appliedPromo?.code,
+          }
+        );
 
         const { url } = paymentResponse.data;
         if (url) {
@@ -96,6 +147,7 @@ export default function OrderForm({
       }
     } catch (error) {
       setIsError(true);
+      setErrorMessage?.(getServerErrorMessage(error));
       if (setIsModalShown) {
         setIsModalShown(false);
       }

@@ -10,6 +10,7 @@ import PromoCodeDisplay from "../promoCode/PromoCodeDisplay";
 import { CartItem as CartItemType } from "@/types/cart";
 import { AppliedPromo } from "@/types/promoCode";
 import { calculatePromoDiscount } from "@/utils/promoCodeUtils";
+import { getCartItemKey, roundToCoins } from "@/utils/cartUtils";
 
 interface CartModalProps {
   isModalShown: boolean;
@@ -17,8 +18,8 @@ interface CartModalProps {
   items: CartItemType[];
   totalAmount: number;
   totalItems: number;
-  onUpdateQuantity: (id: number, quantity: number) => void;
-  onRemoveItem: (id: number) => void;
+  onUpdateQuantity: (key: string, quantity: number) => void;
+  onRemoveItem: (key: string) => void;
   onCheckout: (appliedPromo?: AppliedPromo | null) => void;
   appliedPromo?: AppliedPromo | null;
   onPromoChange?: (promo: AppliedPromo | null) => void;
@@ -48,10 +49,12 @@ export default function CartModal({
   const discount = appliedPromo
     ? calculatePromoDiscount(items, appliedPromo)
     : 0;
-  
-  // Check if promo applies to at least one item
+
+  // Check if promo applies to at least one item in the cart
   const isPromoApplicable = appliedPromo
-    ? items.some((item) => appliedPromo.applicableServices?.includes(item.id))
+    ? items.some((item) =>
+        appliedPromo.applicableServices?.includes(item.id)
+      )
     : false;
 
   // Check if promo is partial (applies to some but not all items)
@@ -60,9 +63,11 @@ export default function CartModal({
     isPromoApplicable &&
     appliedPromo &&
     appliedPromo.applicableServices &&
-    items.some((item) => !appliedPromo.applicableServices!.includes(item.id));
+    items.some(
+      (item) => !appliedPromo.applicableServices!.includes(item.id)
+    );
 
-  const finalAmount = totalAmount - discount;
+  const finalAmount = roundToCoins(totalAmount - discount);
 
   const handleCheckout = () => {
     setIsModalShown(false);
@@ -96,7 +101,7 @@ export default function CartModal({
                 <div className="flex flex-col gap-3 pr-2">
                   {items.map((item) => (
                     <CartItem
-                      key={item.id}
+                      key={getCartItemKey(item)}
                       item={item}
                       onUpdateQuantity={onUpdateQuantity}
                       onRemove={onRemoveItem}

@@ -27,6 +27,7 @@ export default function OrderModal({
 }: OrderModalProps) {
   const [isNotificationShown, setIsNotificationShown] = useState(false);
   const [isError, setIsError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   return (
     <>
@@ -58,6 +59,7 @@ export default function OrderModal({
             setIsError={setIsError}
             setIsNotificationShown={setIsNotificationShown}
             setIsModalShown={setIsModalShown}
+            setErrorMessage={setErrorMessage}
             cartItems={cartItems}
             appliedPromo={appliedPromo}
             onClearCart={onClearCart}
@@ -70,7 +72,8 @@ export default function OrderModal({
         }
         description={
           isError
-            ? "Спробуйте відправити форму пізніше або зателефонуйте нам."
+            ? (errorMessage ??
+              "Спробуйте відправити форму пізніше або зателефонуйте нам.")
             : "Перенаправляємо вас на сторінку оплати..."
         }
         isPopUpShown={isNotificationShown}

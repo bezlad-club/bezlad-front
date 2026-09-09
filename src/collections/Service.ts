@@ -16,6 +16,23 @@ export const Service: CollectionConfig = {
   },
   fields: [
     {
+      name: 'type',
+      label: 'Тип послуги',
+      type: 'select',
+      required: true,
+      defaultValue: 'simple',
+      options: [
+        {
+          label: 'Звичайний квиток',
+          value: 'simple',
+        },
+        {
+          label: 'За часовими слотами',
+          value: 'slotted',
+        },
+      ],
+    },
+    {
       name: 'title',
       label: 'Назва',
       type: 'text',
@@ -43,7 +60,13 @@ export const Service: CollectionConfig = {
       label: 'Ціна',
       type: 'number',
       required: true,
+      defaultValue: 0,
       min: 0,
+      admin: {
+        condition: (data) => data.type !== 'slotted',
+        description:
+          'Використовується лише для звичайних квитків (ціни для послуг за часовими слотами задаються у самих слотах)',
+      },
     },
     {
       name: 'menuOrder',

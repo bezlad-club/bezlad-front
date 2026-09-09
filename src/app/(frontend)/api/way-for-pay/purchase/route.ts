@@ -3,15 +3,40 @@ import crypto from "crypto";
 import axios from "axios";
 import { getPayloadClient } from "@/lib/payload";
 import { promoCodeService } from "@/lib/promoCodeService";
+import {
+  SlotBookingError,
+  formatVisitLabel,
+  slotBookingService,
+} from "@/lib/slotBookingService";
 import type { PromoCodeReservation } from "@/payload-types";
 
 const MERCHANT_ACCOUNT = process.env.MERCHANT_ACCOUNT;
 const MERCHANT_SECRET_KEY = process.env.MERCHANT_SECRET_KEY;
 const SITE_URL = process.env.NEXT_PUBLIC_VERCEL_URL;
 
-interface Item {
+// Simple ticket item: { id, quantity }
+interface SimpleCartItem {
   id: number;
   quantity: number;
+}
+
+// Slotted ticket item: { id, slotId, date, childrenQty, adultsQty }
+interface SlottedCartItem {
+  id: number;
+  slotId: number;
+  date: string;
+  childrenQty: number;
+  adultsQty: number;
+}
+
+type CartItemInput = SimpleCartItem | SlottedCartItem;
+
+function isSlottedCartItem(item: CartItemInput): item is SlottedCartItem {
+  return "slotId" in item && "date" in item;
+}
+
+function roundToCoins(value: number): number {
+  return Math.round(value * 100) / 100;
 }
 
 export async function POST(req: NextRequest) {
@@ -33,8 +58,8 @@ export async function POST(req: NextRequest) {
     }
 
     const productIds = cartItems
-      .filter((item: Item) => item.id)
-      .map((item: Item) => item.id);
+      .filter((item: CartItemInput) => item?.id)
+      .map((item: CartItemInput) => item.id);
 
     if (productIds.length === 0) {
       return NextResponse.json(
@@ -58,6 +83,7 @@ export async function POST(req: NextRequest) {
     // 1. Validate Reservation if present
     let discountPercent = 0;
     let applicableServices: number[] = [];
+    let promoValidUntilMs: number | null = null;
     let orderTimeout = 43200; // Default 12 hours if no promo code
     const payload = await getPayloadClient();
 
@@ -135,6 +161,7 @@ export async function POST(req: NextRequest) {
         );
         applicableServices = reservationApplicableServices;
         orderTimeout = diffSeconds;
+        promoValidUntilMs = diffSeconds * 1000;
       }
     }
 
@@ -156,18 +183,130 @@ export async function POST(req: NextRequest) {
     const orderDate = Math.floor(Date.now() / 1000);
     const currency = "UAH";
 
-    const productNames: string[] = [];
-    const productCounts: number[] = [];
-    const productPrices: number[] = [];
-    let totalAmount = 0;
+    // Reserve capacity for slotted items (one SlotBooking per cart item).
+    // validUntil matches the promo reservation TTL flow when a promo is used,
+    // otherwise the default slot reservation TTL (30 minutes) applies.
+    const slotReservations = new Map<
+      number,
+      Awaited<ReturnType<typeof slotBookingService.reserve>>
+    >();
 
-    for (const item of cartItems) {
+    for (let index = 0; index < cartItems.length; index++) {
+      const item = cartItems[index] as CartItemInput;
+      if (!isSlottedCartItem(item)) continue;
+
       const service = servicesMap.get(item.id);
 
       if (!service) {
         console.error(`Service not found in Payload: ${item.id}`);
         return NextResponse.json(
           { error: `Service not found: ${item.id}` },
+          { status: 400 }
+        );
+      }
+
+      if (service.type !== "slotted") {
+        return NextResponse.json(
+          { error: `Service does not support time slots: ${item.id}` },
+          { status: 400 }
+        );
+      }
+
+      try {
+        const reservation = await slotBookingService.reserve({
+          serviceId: item.id,
+          slotId: item.slotId,
+          dateIso: item.date,
+          childrenQty: item.childrenQty,
+          adultsQty: item.adultsQty,
+          orderReference,
+          clientInfo,
+          validUntilMs: promoValidUntilMs ?? undefined,
+        });
+        slotReservations.set(index, reservation);
+      } catch (err: unknown) {
+        if (err instanceof SlotBookingError) {
+          return NextResponse.json({ error: err.message }, { status: 400 });
+        }
+        throw err;
+      }
+    }
+
+    const productNames: string[] = [];
+    const productCounts: number[] = [];
+    const productPrices: number[] = [];
+    let totalAmount = 0;
+
+    for (let index = 0; index < cartItems.length; index++) {
+      const item = cartItems[index] as CartItemInput;
+      const service = servicesMap.get(item.id);
+
+      if (!service) {
+        console.error(`Service not found in Payload: ${item.id}`);
+        return NextResponse.json(
+          { error: `Service not found: ${item.id}` },
+          { status: 400 }
+        );
+      }
+
+      if (isSlottedCartItem(item)) {
+        const reservation = slotReservations.get(index);
+
+        if (!reservation) {
+          return NextResponse.json(
+            { error: `Slot reservation not found for service: ${item.id}` },
+            { status: 400 }
+          );
+        }
+
+        const promoApplies =
+          discountPercent > 0 &&
+          applicableServices.length > 0 &&
+          applicableServices.includes(item.id);
+        const discountFactor = promoApplies
+          ? 1 - discountPercent / 100
+          : 1;
+
+        const childPrice = roundToCoins(
+          reservation.slot.price * discountFactor
+        );
+        const adultPrice = roundToCoins(
+          reservation.slot.adultPrice * discountFactor
+        );
+
+        const shortTitle =
+          service.title.length > 40
+            ? `${service.title.slice(0, 40).trimEnd()}...`
+            : service.title;
+        const visitLabel = formatVisitLabel(
+          item.date,
+          reservation.slot.startTime,
+          reservation.slot.endTime
+        );
+
+        const buildLineName = (visitorsGroup: string) =>
+          `${shortTitle} — ${visitLabel} (${visitorsGroup}) — код ${
+            reservation.booking.ticketCode
+          }`.replace(/;/g, " ");
+
+        productNames.push(buildLineName("діти"));
+        productCounts.push(item.childrenQty);
+        productPrices.push(childPrice);
+        totalAmount += childPrice * item.childrenQty;
+
+        if (item.adultsQty > 0) {
+          productNames.push(buildLineName("дорослі"));
+          productCounts.push(item.adultsQty);
+          productPrices.push(adultPrice);
+          totalAmount += adultPrice * item.adultsQty;
+        }
+
+        continue;
+      }
+
+      if (typeof service.price !== "number") {
+        return NextResponse.json(
+          { error: `Service price is missing: ${item.id}` },
           { status: 400 }
         );
       }
@@ -181,7 +320,7 @@ export async function POST(req: NextRequest) {
           applicableServices.length > 0 &&
           applicableServices.includes(item.id)
         ) {
-          price = price * (1 - discountPercent / 100);
+          price = roundToCoins(price * (1 - discountPercent / 100));
         }
       }
 
@@ -214,6 +353,7 @@ export async function POST(req: NextRequest) {
     // Lazy cleanup of expired reservations (limited to 10 to be fast)
     // Using 'after' to run this in the background without blocking the response
     after(promoCodeService.cleanupExpired);
+    after(slotBookingService.cleanupExpired);
 
     // Signature generation
     // merchantAccount;merchantDomainName;orderReference;orderDate;amount;currency;productName;productCount;productPrice

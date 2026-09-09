@@ -70,9 +70,11 @@ export interface Config {
     users: User;
     media: Media;
     service: Service;
+    serviceSlot: ServiceSlot;
     gallery: Gallery;
     promoCode: PromoCode;
     promoCodeReservation: PromoCodeReservation;
+    slotBooking: SlotBooking;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -83,9 +85,11 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     service: ServiceSelect<false> | ServiceSelect<true>;
+    serviceSlot: ServiceSlotSelect<false> | ServiceSlotSelect<true>;
     gallery: GallerySelect<false> | GallerySelect<true>;
     promoCode: PromoCodeSelect<false> | PromoCodeSelect<true>;
     promoCodeReservation: PromoCodeReservationSelect<false> | PromoCodeReservationSelect<true>;
+    slotBooking: SlotBookingSelect<false> | SlotBookingSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -175,12 +179,50 @@ export interface Media {
  */
 export interface Service {
   id: number;
+  type: 'simple' | 'slotted';
   title: string;
   description: string;
   second_description?: string | null;
   image?: (number | null) | Media;
-  price: number;
+  /**
+   * Використовується лише для звичайних квитків (ціни для послуг за часовими слотами задаються у самих слотах)
+   */
+  price?: number | null;
   menuOrder: number;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "serviceSlot".
+ */
+export interface ServiceSlot {
+  id: number;
+  /**
+   * Виберіть послугу з типом «За часовими слотами» (звичайні послуги не використовують слоти)
+   */
+  service: number | Service;
+  /**
+   * Дні тижня, для яких діє слот
+   */
+  weekdays: ('mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun')[];
+  /**
+   * Формат ГГ:ХХ, наприклад 10:00
+   */
+  startTime: string;
+  /**
+   * Формат ГГ:ХХ, наприклад 14:30
+   */
+  endTime: string;
+  price: number;
+  /**
+   * Ціна за одного дорослого відвідувача
+   */
+  adultPrice: number;
+  /**
+   * Максимальна кількість дітей на один слот на один день (кількість дорослих не обмежена та не враховується у місця)
+   */
+  capacity: number;
   updatedAt: string;
   createdAt: string;
 }
@@ -244,6 +286,31 @@ export interface PromoCodeReservation {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "slotBooking".
+ */
+export interface SlotBooking {
+  id: number;
+  orderReference?: string | null;
+  /**
+   * Код для перевірки квитка на вході (надсилається клієнту)
+   */
+  ticketCode?: string | null;
+  service?: (number | null) | Service;
+  slot?: (number | null) | ServiceSlot;
+  date?: string | null;
+  childrenQty?: number | null;
+  adultsQty?: number | null;
+  totalAmount?: number | null;
+  status?: ('reserved' | 'confirmed' | 'cancelled') | null;
+  validUntil?: string | null;
+  clientName?: string | null;
+  clientPhone?: string | null;
+  clientEmail?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -279,6 +346,10 @@ export interface PayloadLockedDocument {
         value: number | Service;
       } | null)
     | ({
+        relationTo: 'serviceSlot';
+        value: number | ServiceSlot;
+      } | null)
+    | ({
         relationTo: 'gallery';
         value: number | Gallery;
       } | null)
@@ -289,6 +360,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'promoCodeReservation';
         value: number | PromoCodeReservation;
+      } | null)
+    | ({
+        relationTo: 'slotBooking';
+        value: number | SlotBooking;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -377,12 +452,28 @@ export interface MediaSelect<T extends boolean = true> {
  * via the `definition` "service_select".
  */
 export interface ServiceSelect<T extends boolean = true> {
+  type?: T;
   title?: T;
   description?: T;
   second_description?: T;
   image?: T;
   price?: T;
   menuOrder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "serviceSlot_select".
+ */
+export interface ServiceSlotSelect<T extends boolean = true> {
+  service?: T;
+  weekdays?: T;
+  startTime?: T;
+  endTime?: T;
+  price?: T;
+  adultPrice?: T;
+  capacity?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -427,6 +518,27 @@ export interface PromoCodeReservationSelect<T extends boolean = true> {
   validUntil?: T;
   orderReference?: T;
   finalAmount?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "slotBooking_select".
+ */
+export interface SlotBookingSelect<T extends boolean = true> {
+  orderReference?: T;
+  ticketCode?: T;
+  service?: T;
+  slot?: T;
+  date?: T;
+  childrenQty?: T;
+  adultsQty?: T;
+  totalAmount?: T;
+  status?: T;
+  validUntil?: T;
+  clientName?: T;
+  clientPhone?: T;
+  clientEmail?: T;
   updatedAt?: T;
   createdAt?: T;
 }

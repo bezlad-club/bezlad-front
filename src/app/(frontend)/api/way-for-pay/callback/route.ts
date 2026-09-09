@@ -3,6 +3,7 @@ import crypto from "crypto";
 import axios from "axios";
 import { getPayloadClient } from "@/lib/payload";
 import { promoCodeService } from "@/lib/promoCodeService";
+import { slotBookingService } from "@/lib/slotBookingService";
 
 const MERCHANT_SECRET_KEY = process.env.MERCHANT_SECRET_KEY;
 
@@ -89,6 +90,16 @@ export async function POST(req: NextRequest) {
           );
         }
       }
+
+      // Confirm slot bookings linked to this order
+      try {
+        await slotBookingService.confirm(orderReference);
+      } catch (err) {
+        console.error(
+          `Failed to confirm slot bookings for order ${orderReference}:`,
+          err
+        );
+      }
     } else {
       orderStatus = "decline";
 
@@ -102,6 +113,16 @@ export async function POST(req: NextRequest) {
             err
           );
         }
+      }
+
+      // Cancel slot bookings linked to this order
+      try {
+        await slotBookingService.cancel(orderReference);
+      } catch (err) {
+        console.error(
+          `Failed to cancel slot bookings for order ${orderReference}:`,
+          err
+        );
       }
     }
 

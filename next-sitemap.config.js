@@ -8,12 +8,12 @@ const sitemapConfig = {
   sitemapSize: 5000,
   priority: 0.7,
   generateIndexSitemap: false,
-  exclude: ["/api/*"],
+  exclude: ["/api/*", "/check"],
   generateRobotsTxt: true,
   robotsTxtOptions: {
     policies: [
       { userAgent: "*", allow: "/" },
-      { userAgent: "*", disallow: "/api/*" },
+      { userAgent: "*", disallow: ["/api/*", "/check"] },
     ],
   },
   additionalPaths: async (config) => {

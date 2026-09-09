@@ -11,6 +11,7 @@ import { BUTTON_ANIMATION_DURATION } from "@/constants/constants";
 interface PriceListCardProps extends Service {
   onAddToCart?: (service: Omit<CartItem, "quantity" | "addedAt">) => void;
   onOpenCart?: () => void;
+  onOpenSlotPicker?: () => void;
   isInCart?: boolean;
   cartQuantity?: number;
 }
@@ -22,21 +23,29 @@ export default function PriceListCard({
   description,
   second_description,
   image,
+  type,
   onAddToCart,
   onOpenCart,
+  onOpenSlotPicker,
   isInCart = false,
   cartQuantity = 0,
 }: PriceListCardProps) {
   const brokenTitle = breakWords(title);
   const imageUrl = getImageUrl(image);
   const [isAdding, setIsAdding] = useState(false);
+  const isSlotted = type === "slotted";
+  const showInCartState = !isSlotted && isInCart;
 
   const handleClick = () => {
-    if (isInCart) {
+    if (isSlotted) {
+      onOpenSlotPicker?.();
+      return;
+    }
+    if (showInCartState) {
       onOpenCart?.();
     } else {
       setIsAdding(true);
-      onAddToCart?.({ id, title, price, description, image });
+      onAddToCart?.({ id, title, price: price ?? 0, description, image });
       setTimeout(() => setIsAdding(false), BUTTON_ANIMATION_DURATION);
     }
   };
@@ -74,10 +83,12 @@ export default function PriceListCard({
             <span key={index}>{word}</span>
           ))}
         </h3>
-        <p className="font-bold font-montserrat text-[48px] leading-[120%] uppercase text-white mb-7 flex items-baseline gap-2">
-          {price}
-          <span className="text-[14px] font-azbuka leading-[120%]">грн</span>
-        </p>
+        {isSlotted ? null : (
+          <p className="font-bold font-montserrat text-[48px] leading-[120%] uppercase text-white mb-7 flex items-baseline gap-2">
+            {price}
+            <span className="text-[14px] font-azbuka leading-[120%]">грн</span>
+          </p>
+        )}
         <div className="flex flex-col gap-2 mb-7.5">
           <p className="text-[14px] leading-[120%] text-white flex items-center gap-3.5">
             <span className="w-3.5 h-3.5 bg-white rounded-full shrink-0" />
@@ -93,12 +104,16 @@ export default function PriceListCard({
 
         <MainButton
           className={`w-full h-[52px] text-[14px] leading-[120%] transition-all duration-300 ${
-            isInCart ? "bg-purple-light text-black" : ""
-          } ${isAdding ? "scale-95" : ""}`}
+            showInCartState ? "bg-purple-light text-black" : ""
+          } ${!isSlotted && isAdding ? "scale-95" : ""}`}
           variant="white"
           onClick={handleClick}
         >
-          {isInCart ? `В корзині (${cartQuantity})` : "Додати в корзину"}
+          {isSlotted
+            ? "Обрати квиток"
+            : showInCartState
+              ? `В корзині (${cartQuantity})`
+              : "Додати в корзину"}
         </MainButton>
       </div>
     </div>

@@ -2,6 +2,7 @@
 import { createContext, ReactNode, useMemo, useCallback, useRef } from "react";
 import { Cart, CartContextType, CartItem } from "@/types/cart";
 import useStorage from "@/hooks/useStorage";
+import { getCartItemAmount, getCartItemKey, isSlottedCartItem } from "@/utils/cartUtils";
 import {
   CART_STORAGE_KEY,
   MIN_ITEMS_PER_SERVICE,
@@ -34,7 +35,7 @@ export function CartProvider({ children }: CartProviderProps) {
     items: CartItem[]
   ): Pick<Cart, "totalAmount" | "totalItems"> => {
     const totalAmount = items.reduce(
-      (sum, item) => sum + item.price * item.quantity,
+      (sum, item) => sum + getCartItemAmount(item),
       0
     );
 
@@ -50,8 +51,9 @@ export function CartProvider({ children }: CartProviderProps) {
       isUpdatingRef.current = true;
 
       const currentCart = cart || INITIAL_CART;
+      const itemKey = getCartItemKey(service);
       const existingItemIndex = currentCart.items.findIndex(
-        (item) => item.title === service.title
+        (item) => getCartItemKey(item) === itemKey
       );
 
       let newItems: CartItem[];
@@ -59,6 +61,25 @@ export function CartProvider({ children }: CartProviderProps) {
       if (existingItemIndex !== -1) {
         newItems = currentCart.items.map((item, index) => {
           if (index === existingItemIndex) {
+            if (isSlottedCartItem(service)) {
+              const childrenQty = Math.min(
+                (item.childrenQty ?? 0) + (service.childrenQty ?? 0),
+                MAX_ITEMS_PER_SERVICE
+              );
+              const adultsQty = Math.min(
+                (item.adultsQty ?? 0) + (service.adultsQty ?? 0),
+                MAX_ITEMS_PER_SERVICE
+              );
+              return {
+                ...item,
+                // Price fields come from the slot (fresh values win)
+                price: service.price,
+                adultPrice: service.adultPrice,
+                childrenQty,
+                adultsQty,
+                quantity: childrenQty + adultsQty,
+              };
+            }
             const newQuantity = Math.min(
               item.quantity + quantity,
               MAX_ITEMS_PER_SERVICE
@@ -70,7 +91,9 @@ export function CartProvider({ children }: CartProviderProps) {
       } else {
         const newItem: CartItem = {
           ...service,
-          quantity: Math.min(quantity, MAX_ITEMS_PER_SERVICE),
+          quantity: isSlottedCartItem(service)
+            ? (service.childrenQty ?? 0) + (service.adultsQty ?? 0)
+            : Math.min(quantity, MAX_ITEMS_PER_SERVICE),
           addedAt: Date.now(),
         };
         newItems = [...currentCart.items, newItem];
@@ -91,11 +114,13 @@ export function CartProvider({ children }: CartProviderProps) {
   );
 
   const removeItem = useCallback(
-    (id: number) => {
+    (key: string) => {
       setCart((prevCart) => {
         if (!prevCart) return INITIAL_CART;
 
-        const newItems = prevCart.items.filter((item) => item.id !== id);
+        const newItems = prevCart.items.filter(
+          (item) => getCartItemKey(item) !== key
+        );
         const totals = calculateTotals(newItems);
 
         return {
@@ -108,7 +133,7 @@ export function CartProvider({ children }: CartProviderProps) {
   );
 
   const updateQuantity = useCallback(
-    (id: number, quantity: number) => {
+    (key: string, quantity: number) => {
       if (
         quantity < MIN_ITEMS_PER_SERVICE ||
         quantity > MAX_ITEMS_PER_SERVICE
@@ -120,7 +145,7 @@ export function CartProvider({ children }: CartProviderProps) {
         if (!prevCart) return INITIAL_CART;
 
         const newItems = prevCart.items.map((item) =>
-          item.id === id ? { ...item, quantity } : item
+          getCartItemKey(item) === key ? { ...item, quantity } : item
         );
 
         const totals = calculateTotals(newItems);
@@ -139,17 +164,17 @@ export function CartProvider({ children }: CartProviderProps) {
   }, [setCart]);
 
   const isInCart = useCallback(
-    (serviceTitle: string): boolean => {
+    (key: string): boolean => {
       if (!cart) return false;
-      return cart.items.some((item) => item.title === serviceTitle);
+      return cart.items.some((item) => getCartItemKey(item) === key);
     },
     [cart]
   );
 
   const getItemQuantity = useCallback(
-    (serviceTitle: string): number => {
+    (key: string): number => {
       if (!cart) return 0;
-      const item = cart.items.find((item) => item.title === serviceTitle);
+      const item = cart.items.find((item) => getCartItemKey(item) === key);
       return item ? item.quantity : 0;
     },
     [cart]

@@ -12,6 +12,7 @@ import dynamic from "next/dynamic";
 import { useRef, useState, useCallback } from "react";
 import CartModal from "@/components/shared/cart/CartModal";
 import OrderModal from "@/components/shared/orderModal/OrderModal";
+import SlotPickerModal from "@/components/shared/slotPicker/SlotPickerModal";
 import { useCart } from "@/hooks/useCart";
 import { AppliedPromo } from "@/types/promoCode";
 
@@ -20,6 +21,11 @@ function PriceListBlock({ services }: { services: Service[] }) {
   const [isCartModalShown, setIsCartModalShown] = useState(false);
   const [isOrderModalShown, setIsOrderModalShown] = useState(false);
   const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null);
+  const [slotPickerService, setSlotPickerService] = useState<Service | null>(
+    null
+  );
+  const [isSlotPickerShown, setIsSlotPickerShown] = useState(false);
+  const [slotPickerSession, setSlotPickerSession] = useState(0);
 
   const {
     cart,
@@ -37,6 +43,12 @@ function PriceListBlock({ services }: { services: Service[] }) {
 
   const handleOpenCart = () => {
     setIsCartModalShown(true);
+  };
+
+  const handleOpenSlotPicker = (service: Service) => {
+    setSlotPickerService(service);
+    setSlotPickerSession((session) => session + 1);
+    setIsSlotPickerShown(true);
   };
 
   const handleCheckout = useCallback((promo?: AppliedPromo | null) => {
@@ -77,8 +89,9 @@ function PriceListBlock({ services }: { services: Service[] }) {
                   {...service}
                   onAddToCart={addItem}
                   onOpenCart={handleOpenCart}
-                  isInCart={isInCart(service.title)}
-                  cartQuantity={getItemQuantity(service.title)}
+                  onOpenSlotPicker={() => handleOpenSlotPicker(service)}
+                  isInCart={isInCart(String(service.id))}
+                  cartQuantity={getItemQuantity(String(service.id))}
                 />
               </motion.li>
             ))}
@@ -104,6 +117,13 @@ function PriceListBlock({ services }: { services: Service[] }) {
           totalAmount={cart.totalAmount}
           appliedPromo={appliedPromo}
           onClearCart={clearCart}
+        />
+        <SlotPickerModal
+          isModalShown={isSlotPickerShown}
+          setIsModalShown={setIsSlotPickerShown}
+          service={slotPickerService}
+          sessionKey={slotPickerSession}
+          onAddToCart={addItem}
         />
       </>
     );
@@ -140,8 +160,9 @@ function PriceListBlock({ services }: { services: Service[] }) {
                   {...service}
                   onAddToCart={addItem}
                   onOpenCart={handleOpenCart}
-                  isInCart={isInCart(service.title)}
-                  cartQuantity={getItemQuantity(service.title)}
+                  onOpenSlotPicker={() => handleOpenSlotPicker(service)}
+                  isInCart={isInCart(String(service.id))}
+                  cartQuantity={getItemQuantity(String(service.id))}
                 />
               </SwiperSlide>
             ))}
@@ -170,6 +191,13 @@ function PriceListBlock({ services }: { services: Service[] }) {
         totalAmount={cart.totalAmount}
         appliedPromo={appliedPromo}
         onClearCart={clearCart}
+      />
+      <SlotPickerModal
+        isModalShown={isSlotPickerShown}
+        setIsModalShown={setIsSlotPickerShown}
+        service={slotPickerService}
+        sessionKey={slotPickerSession}
+        onAddToCart={addItem}
       />
     </>
   );

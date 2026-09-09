@@ -3,6 +3,7 @@ import { AppliedPromo } from "@/types/promoCode";
 import CartSummaryItem from "./CartSummaryItem";
 import PromoCodeDisplay from "../promoCode/PromoCodeDisplay";
 import { calculatePromoDiscount } from "@/utils/promoCodeUtils";
+import { getCartItemKey, roundToCoins } from "@/utils/cartUtils";
 
 interface CartSummaryProps {
   items: CartItem[];
@@ -22,16 +23,20 @@ export default function CartSummary({
   const discount = appliedPromo
     ? calculatePromoDiscount(items, appliedPromo)
     : 0;
-  
+
   const isPromoApplicable = appliedPromo
-    ? items.some((item) => appliedPromo.applicableServices?.includes(item.id))
+    ? items.some((item) =>
+        appliedPromo.applicableServices?.includes(item.id)
+      )
     : false;
 
   const isPartialPromo =
     isPromoApplicable &&
     appliedPromo &&
     appliedPromo.applicableServices &&
-    items.some((item) => !appliedPromo.applicableServices!.includes(item.id));
+    items.some(
+      (item) => !appliedPromo.applicableServices!.includes(item.id)
+    );
 
   return (
     <div className={`p-4 rounded-[12px] bg-purple-ultra-light ${className}`}>
@@ -41,7 +46,7 @@ export default function CartSummary({
       <ul className="flex flex-col gap-2 mb-3">
         {items.map((item) => (
           <CartSummaryItem
-            key={item.id}
+            key={getCartItemKey(item)}
             item={item}
             appliedPromo={appliedPromo}
           />
@@ -59,7 +64,9 @@ export default function CartSummary({
         )}
         <div className="flex justify-between items-center">
           <p className="font-bold text-[16px]">Загалом:</p>
-          <p className="font-bold text-[20px]">{totalAmount - discount} грн</p>
+          <p className="font-bold text-[20px]">
+            {roundToCoins(totalAmount - discount)} грн
+          </p>
         </div>
       </div>
     </div>

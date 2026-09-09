@@ -2,6 +2,13 @@
 import { CartItem as CartItemType } from "@/types/cart";
 import Image from "next/image";
 import { getImageUrl } from "@/utils/getImageUrl";
+import { formatDateShortUk } from "@/utils/dateUtils";
+import {
+  getCartItemAmount,
+  getCartItemKey,
+  isSlottedCartItem,
+  roundToCoins,
+} from "@/utils/cartUtils";
 import IconButton from "../buttons/IconButton";
 import CrossIcon from "../icons/CrossIcon";
 import QuantityControl from "./QuantityControl";
@@ -10,8 +17,8 @@ import { AppliedPromo } from "@/types/promoCode";
 
 interface CartItemProps {
   item: CartItemType;
-  onUpdateQuantity: (id: number, quantity: number) => void;
-  onRemove: (id: number) => void;
+  onUpdateQuantity: (key: string, quantity: number) => void;
+  onRemove: (key: string) => void;
   appliedPromo?: AppliedPromo | null;
 }
 
@@ -22,17 +29,26 @@ export default function CartItem({
   appliedPromo,
 }: CartItemProps) {
   const imageUrl = item.image ? getImageUrl(item.image) : "";
-  const originalPrice = item.price;
+  const itemKey = getCartItemKey(item);
+  const isSlotted = isSlottedCartItem(item);
 
   const isApplicable =
     appliedPromo?.applicableServices?.includes(item.id) ?? false;
 
-  const pricePerItem =
-    appliedPromo && isApplicable
-      ? originalPrice * (1 - appliedPromo.discountPercent / 100)
-      : originalPrice;
+  const discountFactor =
+    appliedPromo && isApplicable ? 1 - appliedPromo.discountPercent / 100 : 1;
 
-  const itemTotal = Math.round(pricePerItem * item.quantity);
+  const childrenPrice = roundToCoins(item.price * discountFactor);
+  const adultPrice = roundToCoins((item.adultPrice ?? 0) * discountFactor);
+
+  const itemTotal = isSlotted
+    ? roundToCoins(
+        childrenPrice * (item.childrenQty ?? 0) +
+          adultPrice * (item.adultsQty ?? 0)
+      )
+    : roundToCoins(childrenPrice * item.quantity);
+
+  const originalTotal = roundToCoins(getCartItemAmount(item));
 
   return (
     <div className="flex gap-4 p-4 rounded-[12px] bg-white lg:bg-gray border border-gray-light transition-all duration-300 hover:shadow-md">
@@ -53,7 +69,7 @@ export default function CartItem({
             {item.title}
           </h4>
           <IconButton
-            handleClick={() => onRemove(item.id)}
+            handleClick={() => onRemove(itemKey)}
             className="flex items-center justify-center w-6 h-6 shrink-0 hover:bg-purple-ultra-light rounded-full transition-colors"
             aria-label="Видалити товар"
           >
@@ -61,18 +77,33 @@ export default function CartItem({
           </IconButton>
         </div>
 
-        {item.description && (
+        {!isSlotted && item.description && (
           <p className="text-[12px] text-gray-dark line-clamp-1 mb-2">
             {item.description}
           </p>
         )}
 
         <div className="flex justify-between items-center">
-          <QuantityControl
-            quantity={item.quantity}
-            onIncrease={() => onUpdateQuantity(item.id, item.quantity + 1)}
-            onDecrease={() => onUpdateQuantity(item.id, item.quantity - 1)}
-          />
+          {isSlotted ? (
+            <div className="flex flex-col gap-0.5 min-w-0">
+              <p className="text-[13px] leading-[120%] font-bold text-black">
+                {formatDateShortUk(item.date)}
+              </p>
+              <p className="text-[13px] leading-[120%] text-gray-dark">
+                {item.startTime} - {item.endTime}
+              </p>
+              <p className="text-[13px] leading-[120%] text-gray-dark">
+                Діти: {item.childrenQty ?? 0} × {childrenPrice} грн, Дорослі:{" "}
+                {item.adultsQty ?? 0} × {adultPrice} грн
+              </p>
+            </div>
+          ) : (
+            <QuantityControl
+              quantity={item.quantity}
+              onIncrease={() => onUpdateQuantity(itemKey, item.quantity + 1)}
+              onDecrease={() => onUpdateQuantity(itemKey, item.quantity - 1)}
+            />
+          )}
 
           <div className="flex flex-col items-end">
             <div className="flex flex-col items-end">
@@ -83,7 +114,7 @@ export default function CartItem({
                     <span className="text-[12px] font-azbuka">грн</span>
                   </p>
                   <p className="text-[12px] text-gray-dark line-through font-azbuka">
-                    {originalPrice * item.quantity} грн
+                    {originalTotal} грн
                   </p>
                 </>
               ) : (
@@ -93,9 +124,9 @@ export default function CartItem({
                 </p>
               )}
             </div>
-            {item.quantity > 1 && (
+            {!isSlotted && item.quantity > 1 && (
               <p className="text-[10px] text-gray-dark font-azbuka">
-                {Math.round(pricePerItem)} × {item.quantity}
+                {childrenPrice} × {item.quantity}
               </p>
             )}
           </div>
