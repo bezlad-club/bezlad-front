@@ -39,7 +39,10 @@ export function CartProvider({ children }: CartProviderProps) {
       0
     );
 
-    const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
+    const totalItems = items.reduce(
+      (sum, item) => sum + (isSlottedCartItem(item) ? 1 : item.quantity),
+      0
+    );
 
     return { totalAmount, totalItems };
   };
@@ -77,7 +80,7 @@ export function CartProvider({ children }: CartProviderProps) {
                 adultPrice: service.adultPrice,
                 childrenQty,
                 adultsQty,
-                quantity: childrenQty + adultsQty,
+                quantity: 1,
               };
             }
             const newQuantity = Math.min(
@@ -92,7 +95,7 @@ export function CartProvider({ children }: CartProviderProps) {
         const newItem: CartItem = {
           ...service,
           quantity: isSlottedCartItem(service)
-            ? (service.childrenQty ?? 0) + (service.adultsQty ?? 0)
+            ? 1
             : Math.min(quantity, MAX_ITEMS_PER_SERVICE),
           addedAt: Date.now(),
         };
