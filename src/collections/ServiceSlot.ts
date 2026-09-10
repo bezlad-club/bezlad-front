@@ -18,6 +18,9 @@ export const ServiceSlot: CollectionConfig = {
   admin: {
     useAsTitle: 'startTime',
   },
+  access: {
+    read: () => true,
+  },
   fields: [
     {
       name: 'service',
